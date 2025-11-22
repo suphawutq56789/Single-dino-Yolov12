@@ -214,7 +214,173 @@ results[0].show()
 
 ## 🎯 Triple Input Usage
 
-### Training with DINOv3 Backbone (Recommended)
+### 🎨 Greyscale Version Training (3-Channel Input)
+
+The greyscale version uses **3 total channels** (1 greyscale channel per image) instead of 9 channels (3 RGB channels per image), reducing memory usage while maintaining triple input architecture benefits.
+
+#### Key Differences from RGB Version
+- **Input Channels**: 3 (greyscale) vs 9 (RGB)
+- **Memory Usage**: ~1/3 of RGB version
+- **Processing Speed**: Faster training and inference
+- **Best For**: Applications where color information is not critical (crack detection, structural monitoring, edge detection)
+
+#### Step 1: Prepare Greyscale Dataset
+
+Your dataset should follow the triple input structure, but images will be automatically converted to greyscale during training:
+
+```
+dataset_root/
+├── images/
+│   ├── train/
+│   │   ├── image1.jpg          # Primary images (auto-converted to greyscale)
+│   │   ├── detail1/            # Detail images 1 (auto-converted)
+│   │   └── detail2/            # Detail images 2 (auto-converted)
+│   ├── val/
+│   └── test/
+└── labels/
+    ├── train/
+    ├── val/
+    └── test/
+```
+
+#### Step 2: Train Greyscale Model
+
+```bash
+# ========================================
+# GREYSCALE TRAINING EXAMPLES
+# ========================================
+
+# Basic greyscale training with DINOv3 (P0 preprocessing only)
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --integrate initial \
+    --dinov3-size small \
+    --freeze-dinov3 \
+    --epochs 100 \
+    --batch 16
+
+# Greyscale without DINOv3 (fastest, baseline)
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --integrate nodino \
+    --epochs 100 \
+    --batch 32
+
+# Greyscale with P3 feature enhancement
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --integrate p3 \
+    --dinov3-size base \
+    --freeze-dinov3 \
+    --epochs 100 \
+    --batch 16
+
+# Greyscale with dual P0+P3 DINOv3 integration
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --integrate p0p3 \
+    --dinov3-size small \
+    --freeze-dinov3 \
+    --epochs 100 \
+    --batch 8
+
+# Greyscale with different YOLOv12 variants
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --variant n \
+    --integrate initial \
+    --dinov3-size small \
+    --batch 32
+
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --variant l \
+    --integrate initial \
+    --dinov3-size base \
+    --batch 8
+
+# Greyscale with pretrained YOLOv12 weights
+python "train_grey scale.py" \
+    --data test_triple_dataset.yaml \
+    --pretrained yolov12s.pt \
+    --integrate initial \
+    --dinov3-size small \
+    --epochs 100
+
+# Greyscale with satellite DINOv3 for aerial imagery
+python "train_grey scale.py" \
+    --data aerial_dataset.yaml \
+    --integrate initial \
+    --dinov3-size sat_large \
+    --freeze-dinov3 \
+    --epochs 100 \
+    --batch 8
+
+# ========================================
+# GREYSCALE INTEGRATION STRATEGIES
+# ========================================
+
+# Strategy 1: initial (P0 DINOv3 preprocessing only)
+# - DINOv3 processes input before YOLOv12 backbone
+# - Best for: Maximum feature enhancement, most use cases
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate initial \
+    --dinov3-size small
+
+# Strategy 2: nodino (No DINOv3 - standard triple greyscale)
+# - No DINOv3 integration, pure triple greyscale input
+# - Best for: Baseline comparison, limited GPU memory, fastest training
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate nodino \
+    --batch 32
+
+# Strategy 3: p3 (P3 DINOv3 feature enhancement)
+# - DINOv3 after P3 stage for mid-level feature enhancement
+# - Best for: Targeted feature enhancement
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate p3 \
+    --dinov3-size base
+
+# Strategy 4: p0p3 (Dual DINOv3 integration)
+# - DINOv3 at both P0 (input) and P3 (mid-level) stages
+# - Best for: Research, maximum enhancement, highest accuracy
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate p0p3 \
+    --dinov3-size small \
+    --batch 4
+```
+
+#### Greyscale vs RGB Comparison
+
+| Feature | Greyscale (3-channel) | RGB (9-channel) |
+|---------|----------------------|-----------------|
+| **Input Channels** | 3 (1 per image) | 9 (3 per image) |
+| **Memory Usage** | Low | High (~3x) |
+| **Training Speed** | Fast | Moderate |
+| **Batch Size** | Larger (16-32) | Smaller (8-16) |
+| **Best For** | Crack detection, edge detection, structural monitoring | Color-dependent tasks, full feature extraction |
+| **Accuracy** | Good for grayscale tasks | Better for color-dependent tasks |
+
+#### When to Use Greyscale Version
+
+✅ **Use Greyscale When:**
+- Color information is not critical for detection
+- Limited GPU memory (< 12GB VRAM)
+- Need faster training and inference
+- Working with inherently grayscale data (thermal, X-ray, etc.)
+- Crack detection, structural analysis, edge-based detection
+
+❌ **Use RGB When:**
+- Color is important for detection (e.g., corrosion vs rust)
+- Have sufficient GPU memory (>= 16GB VRAM)
+- Need maximum accuracy
+- Color differentiation is critical
+
+### Training with DINOv3 Backbone (Recommended - RGB Version)
 
 #### Step 1: Set up HuggingFace Authentication
 ```bash
@@ -496,14 +662,35 @@ python -c "from ultralytics import YOLO; YOLO('ultralytics/cfg/models/v12/yolov1
 # Setup authentication
 export HUGGINGFACE_HUB_TOKEN="hf_your_token_here"
 
+# ========================================
+# RGB VERSION (9-channel input)
+# ========================================
+
 # Train with DINOv3 (recommended)
 python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size small
 
 # Train with satellite DINOv3 (NEW)
 python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size sat_large
 
-# Train without DINOv3 (baseline)  
+# Train without DINOv3 (baseline)
 python train_triple_dinov3.py --data dataset.yaml --integrate nodino --batch 16
+
+# ========================================
+# GREYSCALE VERSION (3-channel input)
+# ========================================
+
+# Train greyscale with DINOv3 (recommended for limited GPU memory)
+python "train_grey scale.py" --data dataset.yaml --integrate initial --dinov3-size small --batch 16
+
+# Train greyscale without DINOv3 (fastest, baseline)
+python "train_grey scale.py" --data dataset.yaml --integrate nodino --batch 32
+
+# Train greyscale with satellite DINOv3
+python "train_grey scale.py" --data dataset.yaml --integrate initial --dinov3-size sat_large --batch 8
+
+# ========================================
+# UTILITIES
+# ========================================
 
 # Download DINOv3 models manually
 python download_dinov3.py --model sat_giant --test
@@ -1016,6 +1203,174 @@ python test_hf_auth.py
 # ✓ HuggingFace token found
 # ✓ Token is valid
 # ✓ Can access gated models
+```
+
+---
+
+### `train_grey scale.py` - Greyscale Version Training Script
+
+Training script for YOLOv12 Triple Input with greyscale images (3 channels total instead of 9).
+
+#### Core Arguments
+
+All arguments from `train_triple_dinov3.py` are supported with identical functionality:
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `--data` | str | **required** | Path to dataset configuration (.yaml file) |
+| `--epochs` | int | `100` | Number of training epochs |
+| `--batch` | int | `8` | Batch size (can use larger values due to lower memory usage) |
+| `--device` | str | `0` | GPU device(s) to use |
+| `--variant` | str | `s` | YOLOv12 model size: `n`, `s`, `m`, `l`, `x` |
+| `--imgsz` | int | `224` | Input image size |
+| `--name` | str | `yolov12_triple_dinov3_greyscale` | Experiment name |
+| `--patience` | int | `50` | Early stopping patience |
+| `--save-period` | int | `-1` | Save checkpoint every N epochs |
+| `--pretrained` | str | `None` | Path to pretrained YOLOv12 weights |
+
+#### Greyscale-Specific Integration Strategies
+
+| Value | Description | Best For |
+|-------|-------------|----------|
+| `initial` | P0 DINOv3 preprocessing (3-channel greyscale input) | General use, maximum enhancement |
+| `nodino` | No DINOv3 - standard triple greyscale | Baseline, fastest training, limited GPU |
+| `p3` | P3 DINOv3 feature enhancement | Mid-level feature enhancement |
+| `p0p3` | Dual DINOv3 at P0 and P3 | Research, maximum accuracy |
+
+#### DINOv3 Options (Identical to RGB Version)
+
+All DINOv3 sizes and options are supported:
+- `--dinov3-size`: `small`, `small_plus`, `base`, `large`, `giant`, `sat_large`, `sat_giant`
+- `--freeze-dinov3`: Freeze DINOv3 weights (recommended)
+- `--unfreeze-dinov3`: Fine-tune DINOv3 weights
+- `--triple-branches`: Separate DINOv3 branches per input
+
+#### Example Commands
+
+```bash
+# ========================================
+# GREYSCALE QUICK START
+# ========================================
+
+# Recommended: Small YOLOv12 + DINOv3 greyscale
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate initial \
+    --dinov3-size small \
+    --variant s \
+    --freeze-dinov3 \
+    --batch 16
+
+# Fast baseline without DINOv3
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate nodino \
+    --variant s \
+    --batch 32
+
+# ========================================
+# GREYSCALE FOR DIFFERENT APPLICATIONS
+# ========================================
+
+# Crack detection (greyscale ideal)
+python "train_grey scale.py" \
+    --data crack_dataset.yaml \
+    --integrate initial \
+    --dinov3-size small \
+    --variant m \
+    --epochs 150 \
+    --batch 16
+
+# Structural monitoring (edge-based)
+python "train_grey scale.py" \
+    --data structure_dataset.yaml \
+    --integrate p3 \
+    --dinov3-size base \
+    --variant l \
+    --batch 8
+
+# Satellite imagery (greyscale for faster processing)
+python "train_grey scale.py" \
+    --data satellite_dataset.yaml \
+    --integrate initial \
+    --dinov3-size sat_large \
+    --variant l \
+    --batch 8 \
+    --epochs 200
+
+# ========================================
+# GREYSCALE VARIANTS COMPARISON
+# ========================================
+
+# Nano - fastest inference
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --variant n \
+    --integrate initial \
+    --dinov3-size small \
+    --batch 32
+
+# Large - high accuracy
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --variant l \
+    --integrate initial \
+    --dinov3-size base \
+    --batch 8
+
+# ========================================
+# MEMORY-CONSTRAINED SCENARIOS
+# ========================================
+
+# Low VRAM (< 8GB) - greyscale without DINOv3
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate nodino \
+    --variant n \
+    --batch 32 \
+    --imgsz 640
+
+# Medium VRAM (8-12GB) - greyscale with small DINOv3
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate initial \
+    --dinov3-size small \
+    --variant s \
+    --batch 16
+
+# High VRAM (>= 16GB) - greyscale with large DINOv3
+python "train_grey scale.py" \
+    --data dataset.yaml \
+    --integrate p0p3 \
+    --dinov3-size base \
+    --variant l \
+    --batch 8
+```
+
+#### Greyscale Performance Tips
+
+**Memory Optimization:**
+```bash
+# Use larger batch sizes than RGB version (2-4x larger)
+python "train_grey scale.py" --data dataset.yaml --batch 32
+
+# Enable on-device caching for faster training
+python "train_grey scale.py" --data dataset.yaml --cache
+
+# Use mixed precision training
+python "train_grey scale.py" --data dataset.yaml --amp
+```
+
+**Speed Optimization:**
+```bash
+# Disable DINOv3 for fastest training
+python "train_grey scale.py" --integrate nodino --batch 32
+
+# Use smaller image size for faster processing
+python "train_grey scale.py" --imgsz 320 --batch 32
+
+# Use nano variant for maximum speed
+python "train_grey scale.py" --variant n --batch 32
 ```
 
 ---
