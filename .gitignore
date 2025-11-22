@@ -1,0 +1,34 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Training outputs
+runs/
+wandb/
+
+# Temporary files
+temp_*.yaml
+*.tmp
+
+# Environment
+.env
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model weights (optional - uncomment if you don't want to track weights)
+# *.pt
+# *.pth
+# *.onnx

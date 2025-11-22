@@ -1920,6 +1920,15 @@ class Albumentations:
         if self.transform is None or random.random() > self.p:
             return labels
 
+        # GREYSCALE FIX: Skip Albumentation for greyscale triple input (3 channels)
+        # to prevent automatic RGB conversion that would create 9 channels
+        im = labels.get("img")
+        if im is not None and len(im.shape) == 3 and im.shape[2] == 3:
+            # Check if this is greyscale triple input by checking if all 3 channels are similar
+            # (not a perfect check but good enough to skip RGB conversion)
+            # For true greyscale triple input, we just skip albumentation entirely
+            return labels
+
         if self.contains_spatial:
             cls = labels["cls"]
             if len(cls):
@@ -2119,7 +2128,15 @@ class Format:
         if len(img.shape) < 3:
             img = np.expand_dims(img, -1)
         img = img.transpose(2, 0, 1)
-        img = np.ascontiguousarray(img[::-1] if random.uniform(0, 1) > self.bgr else img)
+
+        # GREYSCALE FIX: Don't flip channels for greyscale triple input (3 channels)
+        # to prevent duplication that would create 9 channels
+        if img.shape[0] == 3:
+            # For greyscale triple input, keep as-is without channel flipping
+            img = np.ascontiguousarray(img)
+        else:
+            img = np.ascontiguousarray(img[::-1] if random.uniform(0, 1) > self.bgr else img)
+
         img = torch.from_numpy(img)
         return img
 

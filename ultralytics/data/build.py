@@ -99,11 +99,11 @@ def build_yolo_dataset(cfg, img_path, batch, data, mode="train", rect=False, str
     is_triple_input = all((base_path / folder).exists() for folder in expected_folders)
     
     if is_triple_input:
-        # Import and use TripleInputDataset for triple input
-        from ultralytics.data.triple_dataset import TripleInputDataset
+        # Import and use TripleInputDatasetGreyscale for triple input (GREYSCALE VERSION)
+        from ultralytics.data.triple_dataset_greyscale import TripleInputDatasetGreyscale as TripleInputDataset
         from ultralytics.utils import LOGGER
-        LOGGER.info(f"Triple input structure detected - using TripleInputDataset for {mode}")
-        
+        LOGGER.info(f"Triple input GREYSCALE structure detected - using TripleInputDatasetGreyscale for {mode}")
+
         return TripleInputDataset(
             img_path=img_path,
             imgsz=cfg.imgsz,
