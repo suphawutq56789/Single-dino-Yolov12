@@ -225,8 +225,8 @@ def train_triple_dinov3_greyscale(
                 print(f"[DEBUG] First backbone layer: {config.get('backbone', [[]])[0]}")
 
                 # Create model with variant scaling
-                print(f"[DEBUG] Creating model with scale={variant}")
-                model = YOLO(temp_config_path, scale=variant)
+                print(f"[DEBUG] Creating model with scale={variant} (set in config)")
+                model = YOLO(temp_config_path)
 
                 # Don't clean up temporary file yet - keep for debugging
                 # Path(temp_config_path).unlink(missing_ok=True)
@@ -435,8 +435,8 @@ def train_triple_dinov3_greyscale(
                 print(f"[DEBUG] ✓ Patched parse_model to include DINOv3 modules in globals")
                 
                 try:
-                    print(f"[DEBUG] Creating model with scale={variant}")
-                    model = YOLO(temp_config_path, scale=variant)
+                    print(f"[DEBUG] Creating model with scale={variant} (set in config)")
+                    model = YOLO(temp_config_path)
                 finally:
                     # Restore original parse_model
                     tasks_module.parse_model = original_parse_model
