@@ -215,7 +215,8 @@ def train_triple_dinov3_greyscale(
                 config['scale'] = variant  # Set model scale (n, s, m, l, x)
 
                 # Create temporary config file with correct settings and variant
-                temp_config_path = f"temp_yolov12_triple_nodino_{variant}_greyscale.yaml"
+                # IMPORTANT: Scale letter MUST come immediately after version number for guess_model_scale() regex
+                temp_config_path = f"temp_yolov12{variant}_triple_nodino_greyscale.yaml"
                 with open(temp_config_path, 'w') as f:
                     yaml.dump(config, f, default_flow_style=False)
 
@@ -355,9 +356,20 @@ def train_triple_dinov3_greyscale(
                 config['scale'] = variant  # Set model scale (n, s, m, l, x)
 
                 # Create temporary config file with variant
-                temp_config_path = f"temp_yolov12_triple_dinov3_{variant}_{dinov3_size}_greyscale.yaml"
+                # IMPORTANT: Scale letter MUST come immediately after version number for guess_model_scale() regex
+                temp_config_path = f"temp_yolov12{variant}_triple_dinov3_{dinov3_size}_greyscale.yaml"
                 with open(temp_config_path, 'w') as f:
                     yaml.dump(config, f, default_flow_style=False)
+
+                # DEBUG: Print temp YAML file contents to verify scale is written
+                print(f"\n[DEBUG] === Contents of {temp_config_path} ===")
+                with open(temp_config_path, 'r') as f:
+                    yaml_contents = f.read()
+                    # Print first 50 lines to see nc, ch, scale, scales section
+                    lines = yaml_contents.split('\n')[:50]
+                    for i, line in enumerate(lines, 1):
+                        print(f"{i:3d}: {line}")
+                print(f"[DEBUG] === End of YAML contents ===\n")
 
                 # DEBUG: Print first backbone layer to verify DINOv3Backbone is still there
                 if config.get('backbone') and len(config['backbone']) > 0:
