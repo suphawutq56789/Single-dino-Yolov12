@@ -94,6 +94,28 @@ def train_triple_dinov3_greyscale(
     print(f"Save Period: {'Best/Last only' if save_period == -1 else f'Every {save_period} epochs'}")
     print("-" * 60)
 
+    # Determine actual device to use - Auto-detect CPU if CUDA not available
+    actual_device = 'cpu'
+    if device != 'cpu' and torch.cuda.is_available():
+        try:
+            # Convert device string to proper format
+            if device.isdigit():
+                test_device = f"cuda:{device}"
+            else:
+                test_device = device
+
+            # Test if the device is valid
+            torch.zeros(1).to(test_device)
+            actual_device = test_device
+            print(f"✓ Using GPU device: {actual_device}")
+        except Exception as e:
+            print(f"⚠️ Device '{device}' not available ({e}), falling back to CPU")
+            actual_device = 'cpu'
+    else:
+        print(f"✓ Using CPU device")
+
+    print("-" * 60)
+
     # Step 1: Setup requirements based on integration strategy
     print(f"\n🔧 Step 1: Setting up requirements for integration strategy: {integrate}...")
 
@@ -479,26 +501,6 @@ def train_triple_dinov3_greyscale(
             scale_factor = width_scaling.get(variant, 1.0)
             p0_output_channels = int(64 * scale_factor)  # Base 64 channels scaled by variant
 
-            # Determine actual device to use - handle device string properly
-            actual_device = 'cpu'
-            if device != 'cpu' and torch.cuda.is_available():
-                try:
-                    # Convert device string to proper format
-                    if device.isdigit():
-                        test_device = f"cuda:{device}"
-                    else:
-                        test_device = device
-
-                    # Test if the device is valid
-                    torch.zeros(1).to(test_device)
-                    actual_device = test_device
-                    print(f"✓ Using GPU device: {actual_device}")
-                except Exception as e:
-                    print(f"⚠️ Device '{device}' not available ({e}), falling back to CPU")
-                    actual_device = 'cpu'
-            else:
-                print(f"✓ Using CPU device")
-
             # Create P0 preprocessor on CPU first, then move to target device
             print(f"Creating P0 DINOv3 preprocessor (greyscale 3 channels)...")
             p0_preprocessor = DINOv3Backbone(
@@ -614,7 +616,7 @@ def train_triple_dinov3_greyscale(
         'val': True,
         'plots': True,
         'cache': False,  # Disable caching for triple input
-        'device': device,
+        'device': actual_device,  # Use auto-detected device (CPU if CUDA unavailable)
 
         # Learning rate configuration for SMALL DATASET - adjusted for better convergence
         # Higher initial LR helps with small datasets, lower final LR for stability
