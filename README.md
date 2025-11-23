@@ -334,7 +334,85 @@ DINOv2 models are now used by default and don't require authentication. If you s
 4. **Adjust batch size** based on GPU memory
 5. **Use variant `n`** for edge devices or real-time inference
 
-## Command Line Arguments
+## Command Line Arguments Reference
+
+### Complete Parameter Table
+
+| Parameter | Type | Default | Options | Description |
+|-----------|------|---------|---------|-------------|
+| **Required** |
+| `--data` | str | - | path/to/data.yaml | Dataset configuration file (YOLO format) |
+| **Model Architecture** |
+| `--variant` | str | `s` | `n`, `s`, `m`, `l`, `x` | YOLOv12 model size variant |
+| `--integrate` | str | `initial` | `nodino`, `initial`, `p3`, `p0p3` | DINOv3 integration strategy |
+| `--dinov3-size` | str | `small` | `small`, `base`, `large` | DINOv3 model size (only for DINOv3 modes) |
+| **Training Configuration** |
+| `--epochs` | int | `100` | 1-1000 | Number of training epochs |
+| `--batch` | int | `8` | 1-128 | Batch size (auto-adjusted for small datasets) |
+| `--imgsz` | int | `640` | 224, 416, 640, 1024 | Input image size (width & height) |
+| `--device` | str | `0` | `0`, `cpu`, `0,1,2,3` | GPU device (auto-fallback to CPU if unavailable) |
+| `--patience` | int | `50` | 10-200 | Early stopping patience (epochs) |
+| **DINOv3 Configuration** |
+| `--freeze-dinov3` | flag | True | - | Freeze DINOv3 weights during training (default) |
+| `--unfreeze-dinov3` | flag | False | - | Fine-tune DINOv3 weights (requires more GPU memory) |
+| **Output Configuration** |
+| `--name` | str | `yolov12_triple_dinov3_greyscale` | any string | Experiment name for results folder |
+| `--save-period` | int | `-1` | -1, 1-50 | Save checkpoint every N epochs (-1 = only best/last) |
+
+### Model Variants Detailed Comparison
+
+| Variant | Depth Scale | Width Scale | Parameters | GFLOPs | P0 Channels¹ | GPU Memory² | Speed³ | Best Use Case |
+|---------|-------------|-------------|------------|--------|--------------|-------------|--------|---------------|
+| **n** (nano) | 0.50 | 0.25 | ~2.5M | ~25 | 16 | ~2GB | ⚡⚡⚡⚡⚡ | Edge devices, mobile, real-time |
+| **s** (small) | 0.50 | 0.50 | ~9M | ~65 | 32 | ~4GB | ⚡⚡⚡⚡ | Balanced speed/accuracy (default) |
+| **m** (medium) | 0.50 | 1.00 | ~20M | ~150 | 64 | ~8GB | ⚡⚡⚡ | High accuracy applications |
+| **l** (large) | 1.00 | 1.00 | ~26M | ~195 | 64 | ~10GB | ⚡⚡ | Production deployments |
+| **x** (xlarge) | 1.00 | 1.50 | ~59M | ~350 | 96 | ~16GB | ⚡ | Maximum accuracy, research |
+
+¹ P0 Channels: DINOv3 output channels for `--integrate initial` mode (base 64 × width scale)
+² GPU Memory: Approximate VRAM usage at imgsz=640, batch=4 with DINOv3 small
+³ Speed: Relative training/inference speed (more ⚡ = faster)
+
+### Integration Strategies Comparison
+
+| Strategy | DINOv3 Usage | Architecture | Memory | Speed | Accuracy | Recommended Batch | Best For |
+|----------|--------------|--------------|--------|-------|----------|-------------------|----------|
+| **nodino** | None | Pure YOLOv12 greyscale | Low | ⚡⚡⚡⚡⚡ | Baseline | 16-32 | Fast training, baseline comparison, limited GPU |
+| **initial** | P0 preprocessing | DINOv3 → YOLOv12 | Medium | ⚡⚡⚡⚡ | Good | 8-16 | **Recommended** - Best balance of speed/accuracy |
+| **p3** | P3 enhancement | YOLOv12 + DINOv3 at P3 | Medium-High | ⚡⚡⚡ | Better | 4-8 | Fine-grained detection, small objects |
+| **p0p3** | Dual integration | DINOv3 → YOLOv12 + DINOv3 at P3 | High | ⚡⚡ | Best | 2-4 | Maximum accuracy, research |
+
+### DINOv3 Model Sizes Detailed
+
+| Size | HuggingFace Model | Parameters | Hidden Size | Layers | Speed | Accuracy | Memory Impact | Best For |
+|------|-------------------|------------|-------------|--------|-------|----------|---------------|----------|
+| **small** | `facebook/dinov3-vits16-pretrain-lvd1689m` | 22M | 384 | 12 | ⚡⚡⚡ | Good | +2GB | **Default** - Most scenarios |
+| **base** | `facebook/dinov3-vitb16-pretrain-lvd1689m` | 86M | 768 | 12 | ⚡⚡ | Better | +4GB | Higher accuracy needs |
+| **large** | `facebook/dinov3-vitl16-pretrain-lvd1689m` | 300M | 1024 | 24 | ⚡ | Best | +8GB | Research, maximum accuracy |
+
+### Image Size Guidelines
+
+| Image Size | Resolution | Speed | Accuracy | Memory | Best Use Case | Recommended Variants |
+|------------|------------|-------|----------|--------|---------------|----------------------|
+| **224px** | 224×224 | ⚡⚡⚡⚡⚡ | Baseline | Low | DINOv3 optimal, fast training | n, s |
+| **416px** | 416×416 | ⚡⚡⚡⚡ | Good | Medium | Balanced, memory-constrained GPUs | s, m |
+| **640px** | 640×640 | ⚡⚡⚡ | Better | High | **YOLO standard** (default) | s, m, l |
+| **1024px** | 1024×1024 | ⚡⚡ | Best | Very High | High-resolution, small object detection | l, x |
+
+### Batch Size Recommendations by GPU Memory
+
+| GPU VRAM | Variant | Integration | Image Size | Recommended Batch | Expected Training Speed |
+|----------|---------|-------------|------------|-------------------|------------------------|
+| **4-6GB** | n | nodino | 416 | 8-16 | Fast |
+| **4-6GB** | n | initial | 224 | 4-8 | Medium |
+| **8-12GB** | s | initial | 640 | 8-16 | Medium |
+| **8-12GB** | m | nodino | 640 | 16-32 | Fast |
+| **16-24GB** | l | initial | 640 | 8-16 | Medium |
+| **16-24GB** | x | p3 | 640 | 4-8 | Slow |
+| **24GB+** | x | p0p3 | 640 | 4-8 | Slow |
+| **CPU** | n, s | initial | 224 | 2-4 | Very Slow |
+
+### Quick Reference Command Examples
 
 ```bash
 # Required
