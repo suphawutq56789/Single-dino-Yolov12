@@ -3,8 +3,8 @@
 # CFG file for YOLOv12-triple with DINOv3 feature extraction after P3
 
 # Parameters
-nc: 80 # number of classes  
-ch: 9  # input channels for triple input
+nc: 80 # number of classes
+ch: 3  # input channels for triple greyscale input (1 channel per image)
 scales: # model compound scaling constants, i.e. 'model=yolov12n_triple_dinov3_p3.yaml' will call yolov12_triple_dinov3_p3.yaml with scale 'n'
   # [depth, width, max_channels]
   n: [0.50, 0.25, 1024] # summary: ~XXX layers, ~X,XXX,XXX parameters, ~X,XXX,XXX gradients, ~XX.X GFLOPs
@@ -19,7 +19,7 @@ dinov3:
   freeze: true               # Freeze DINOv3 backbone during training
   use_triple_branches: false # Use separate DINOv3 branches for each input
   output_channels: 256       # Output channels from DINOv3 backbone (after P3)
-  image_size: 224           # Input image size for DINOv3
+  image_size: 640           # Input image size (default: 640 for YOLO, 224 for DINOv3 optimal)
   integration_point: "p3"    # Integration point: after P3 stage
 
 # YOLO12-triple backbone with P3 DINOv3 integration

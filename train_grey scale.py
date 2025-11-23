@@ -40,7 +40,7 @@ def train_triple_dinov3_greyscale(
     pretrained_path: str = None,
     epochs: int = 100,
     batch_size: int = 8,  # Smaller default due to DINOv3 memory usage
-    imgsz: int = 224,     # DINOv3 default size
+    imgsz: int = 640,     # YOLO default size (can use 224 for DINOv3 or 640 for YOLO)
     patience: int = 50,
     name: str = "yolov12_triple_dinov3_greyscale",
     device: str = "0",
@@ -242,6 +242,9 @@ def train_triple_dinov3_greyscale(
                     first_layer_before = config['backbone'][0]
                     print(f"\n[DEBUG] First backbone layer BEFORE processing: {first_layer_before}")
                     print(f"[DEBUG] Module name BEFORE: {first_layer_before[2] if len(first_layer_before) >= 3 else 'N/A'}")
+
+                # GREYSCALE: Set input channels to 3 for triple greyscale input (1 channel per image)
+                config['ch'] = 3  # Changed from 9 to 3 for greyscale
 
                 # Update DINOv3 model size and configuration
                 if integrate in ["dinov3", "initial", "p3", "p0p3"]:
@@ -489,7 +492,7 @@ def train_triple_dinov3_greyscale(
                 input_channels=3,  # GREYSCALE: Changed from 9 to 3
                 output_channels=p0_output_channels,
                 freeze=freeze_dinov3,
-                image_size=224
+                image_size=imgsz  # Use user-specified image size (default: 640)
             )
 
             # Move to target device after creation
@@ -999,8 +1002,8 @@ def main():
                        help='Number of training epochs (default: 100)')
     parser.add_argument('--batch', type=int, default=8,
                        help='Batch size (default: 8)')
-    parser.add_argument('--imgsz', type=int, default=224,
-                       help='Image size (default: 224)')
+    parser.add_argument('--imgsz', type=int, default=640,
+                       help='Image size (default: 640, use 224 for DINOv3 optimal or 640 for YOLO standard)')
     parser.add_argument('--patience', type=int, default=50,
                        help='Early stopping patience (default: 50)')
     parser.add_argument('--name', type=str, default='yolov12_triple_dinov3_greyscale',

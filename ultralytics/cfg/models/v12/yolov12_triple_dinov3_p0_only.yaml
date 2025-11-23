@@ -3,8 +3,8 @@
 # This config shows the CORRECT P0 pattern from reference repository
 
 # Parameters
-nc: 80 # number of classes  
-ch: 9  # input channels for triple input
+nc: 80 # number of classes
+ch: 3  # input channels for triple greyscale input (1 channel per image)
 scales: # model compound scaling constants
   # [depth, width, max_channels]
   n: [0.50, 0.25, 1024]
@@ -20,7 +20,7 @@ dinov3:
   use_triple_branches: false # Use separate DINOv3 branches for each input
   p0_preprocessing: true     # Enable P0 input preprocessing (handled in training script)
   p0_output_channels: 64     # Output channels from P0 DINOv3 preprocessing
-  image_size: 224           # Input image size for DINOv3
+  image_size: 640           # Input image size (default: 640 for YOLO, 224 for DINOv3 optimal)
   integration_points: ["p0"] # P0 preprocessing only
 
 # YOLO12-triple backbone (receives P0 DINOv3 preprocessed input)

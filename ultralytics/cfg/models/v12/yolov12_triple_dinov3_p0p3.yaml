@@ -3,8 +3,8 @@
 # CFG file for YOLOv12-triple with dual DINOv3 feature extraction at P0 and P3 stages
 
 # Parameters
-nc: 80 # number of classes  
-ch: 9  # input channels for triple input
+nc: 80 # number of classes
+ch: 3  # input channels for triple greyscale input (1 channel per image)
 scales: # model compound scaling constants, i.e. 'model=yolov12n_triple_dinov3_p0p3.yaml' will call yolov12_triple_dinov3_p0p3.yaml with scale 'n'
   # [depth, width, max_channels]
   n: [0.50, 0.25, 1024] # summary: ~XXX layers, ~X,XXX,XXX parameters, ~X,XXX,XXX gradients, ~XX.X GFLOPs
@@ -22,7 +22,7 @@ dinov3:
   p0_output_channels: 64     # Output channels from P0 DINOv3 preprocessing
   p3_enhancement: true       # Enable P3 feature enhancement (in backbone)
   p3_output_channels: 128    # Output channels from P3 feature enhancer
-  image_size: 224           # Input image size for DINOv3
+  image_size: 640           # Input image size (default: 640 for YOLO, 224 for DINOv3 optimal)
   integration_points: ["p0", "p3"]  # P0 preprocessing + P3 backbone enhancement
 
 # YOLO12-triple backbone with Dual DINOv3 integration (P0 + P3)

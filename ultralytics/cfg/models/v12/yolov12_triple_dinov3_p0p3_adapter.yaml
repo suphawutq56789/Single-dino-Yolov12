@@ -3,8 +3,8 @@
 # Uses channel adapters to bridge fixed DINOv3 with scaled YOLOv12 variants
 
 # Parameters
-nc: 80 # number of classes  
-ch: 9  # input channels for triple input
+nc: 80 # number of classes
+ch: 3  # input channels for triple greyscale input (1 channel per image)
 scales: # model compound scaling constants
   # [depth, width, max_channels]
   n: [0.50, 0.25, 1024]
@@ -24,15 +24,15 @@ dinov3:
   # Target channels (will be scaled by variant)
   p0_target_channels: 64   # P0 adapter target (base channels, will be scaled)
   p3_target_channels: 128  # P3 adapter target (base channels, will be scaled)
-  image_size: 224
+  image_size: 640           # Input image size (default: 640 for YOLO, 224 for DINOv3 optimal)
   integration_points: ["p0", "p3"]
 
 # P0P3 architecture with adapter pattern
 backbone:
   # [from, repeats, module, args]
   
-  # P0 DINOv3 with Adapter (9-channel input → fixed 64 → scaled target)
-  - [-1, 1, DINOv3BackboneWithAdapter, ["facebook/dinov3-vitl16-pretrain-lvd1689m", 9, 64, 64, true]]   # 0-P0 DINOv3+Adapter
+  # P0 DINOv3 with Adapter (3-channel greyscale input → fixed 64 → scaled target)
+  - [-1, 1, DINOv3BackboneWithAdapter, ["facebook/dinov3-vitl16-pretrain-lvd1689m", 3, 64, 64, true]]   # 0-P0 DINOv3+Adapter
   
   # Standard backbone layers - Conv accepts P0 adapter output channels
   - [-1, 1, Conv, [64, 3, 2]]              # 1-P1/2 (input channels will be scaled from P0 adapter)

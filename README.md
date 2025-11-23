@@ -1,1501 +1,389 @@
-<div align="center">
-<h1>YOLOv12 Triple Input</h1>
-<h3>YOLOv12: Enhanced Multi-Image Object Detection with Triple Input Architecture</h3>
+# YOLOv12 Triple Greyscale with DINOv3 Integration
 
-**Research Group, Department of Civil Engineering**  
-**King Mongkut's University of Technology Thonburi (KMUTT)**
+YOLOv12 object detection model with **triple greyscale input** (3 images × 1 channel = 3 channels total) and optional DINOv3 feature extraction for enhanced performance.
 
-Original YOLOv12 by [Yunjie Tian](https://sunsmarterjie.github.io/)<sup>1</sup>, [Qixiang Ye](https://people.ucas.ac.cn/~qxye?language=en)<sup>2</sup>, [David Doermann](https://cse.buffalo.edu/~doermann/)<sup>1</sup>
+## Features
 
-<sup>1</sup>  University at Buffalo, SUNY, <sup>2</sup> University of Chinese Academy of Sciences.
+- **Triple Greyscale Input**: Process 3 consecutive greyscale frames simultaneously (3 channels total)
+- **DINOv3 Integration**: Optional DINOv3 backbone for improved feature extraction
+- **Flexible Architecture**: Multiple integration strategies (P0 preprocessing, P3 enhancement, dual integration)
+- **Memory Efficient**: Lower memory usage compared to RGB approaches
+- **Multi-Scale Support**: 640px (YOLO standard, default) or 224px (DINOv3 optimal)
 
-**Enhanced with Triple Input Architecture for Civil Engineering Applications**
-
-<p align="center">
-  <img src="assets/yolov12_triple_dinov3_architecture.svg" width=100%> <br>
-  YOLOv12 Triple Input + DINOv3 Architecture for Enhanced Civil Engineering Applications
-</p>
-
-<p align="center">
-  <img src="assets/tradeoff_turbo.svg" width=90%> <br>
-  Comparison with popular methods in terms of latency-accuracy (left) and FLOPs-accuracy (right) trade-offs
-</p>
-
-</div>
-
-[![arXiv](https://img.shields.io/badge/arXiv-2502.12524-b31b1b.svg)](https://arxiv.org/abs/2502.12524) [![Hugging Face Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12) <a href="https://colab.research.google.com/github/roboflow-ai/notebooks/blob/main/notebooks/train-yolov12-object-detection-model.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a> [![Kaggle Notebook](https://img.shields.io/badge/Kaggle-Notebook-blue?logo=kaggle)](https://www.kaggle.com/code/jxxn03x/yolov12-on-custom-data) [![LightlyTrain Notebook](https://img.shields.io/badge/LightlyTrain-Notebook-blue?)](https://colab.research.google.com/github/lightly-ai/lightly-train/blob/main/examples/notebooks/yolov12.ipynb) [![deploy](https://media.roboflow.com/deploy.svg)](https://blog.roboflow.com/use-yolov12-with-roboflow/#deploy-yolov12-models-with-roboflow) [![Openbayes](https://img.shields.io/static/v1?label=Demo&message=OpenBayes%E8%B4%9D%E5%BC%8F%E8%AE%A1%E7%AE%97&color=green)](https://openbayes.com/console/public/tutorials/A4ac4xNrUCQ) 
-
-## 🚀 What's New: Triple Input Architecture with DINOv3 for Civil Engineering
-
-This repository extends YOLOv12 with **Triple Input Architecture** and **DINOv3 backbone integration**, developed by the Research Group at the Department of Civil Engineering, KMUTT. The enhancement enables processing of three related images simultaneously with advanced feature extraction for superior object detection in civil engineering applications. This implementation is inspired by [triple_YOLO13](https://github.com/Sompote/triple_YOLO13) and [DINOv3](https://github.com/facebookresearch/dinov3) and provides:
-
-- **🎯 Enhanced Detection**: Process primary image + 2 detail images as 9-channel input
-- **🤖 DINOv3 Integration**: State-of-the-art vision transformer features from Meta's DINOv3
-- **🛰️ Satellite Support**: NEW satellite-trained DINOv3 variants for aerial/satellite imagery
-- **🏗️ Civil Engineering Focus**: Optimized for infrastructure monitoring and analysis
-- **🧊 Freezing Support**: Freeze DINOv3 backbone for efficient transfer learning
-- **🧠 Smart Fallback**: Automatically uses primary image if detail images are missing  
-- **⚡ Efficient Processing**: Specialized modules for optimal performance
-- **🔄 Backward Compatible**: Seamlessly works with existing YOLOv12 infrastructure
-
-### Triple Input + DINOv3 Features for Civil Engineering
-
-- **Multi-Image Processing**: Combines three related images (primary + 2 detail views) for comprehensive structural analysis
-- **DINOv3 Backbone**: Leverages Meta's state-of-the-art vision transformer for superior feature extraction
-- **🛰️ Satellite DINOv3**: NEW satellite-trained variants (SAT-493M dataset) for aerial and satellite imagery analysis
-- **Automatic Model Download**: DINOv3 models are downloaded automatically from HuggingFace on first use
-- **9-Channel Input**: Concatenated RGB channels from three images enhanced by DINOv3 features
-- **Independent Branch Processing**: Each image processed separately before fusion for robust detection
-- **Frozen Transfer Learning**: Use pre-trained DINOv3 features with frozen weights for efficient training
-- **Feature Fusion**: Advanced feature combination for improved accuracy in infrastructure monitoring
-- **Dataset Flexibility**: Supports both single and triple input formats for various civil engineering applications
-- **Infrastructure Applications**: Optimized for crack detection, structural monitoring, and construction analysis
-- **Model Variants**: Multiple DINOv3 sizes (small, small+, base, large, giant, **sat_large, sat_giant**) for different computational requirements
-
-## Updates
-
-- **2025/10/02**: 🛰️ **DINOv3 Satellite Variants** added! Support for satellite-trained DINOv3 models (SAT-493M dataset) with `sat_large` (ViT-L/16, 300M params) and `sat_giant` (ViT-7B/16, 6.7B params) for enhanced aerial and satellite imagery analysis.
-- **2025/09/20**: 🎉 **Triple Input Architecture with DINOv3** released by KMUTT Civil Engineering Research Group! Process multiple images simultaneously with state-of-the-art vision transformer features for enhanced detection accuracy in civil engineering applications.
-- **2025/09/20**: 🤖 **DINOv3 Integration** - Complete implementation with HuggingFace model support, automatic downloading, and frozen backbone training.
-- **2025/09/20**: 🏗️ Optimized for infrastructure monitoring, crack detection, and structural analysis applications.
-- 2025/06/17: **Use this repo for YOLOv12 instead of [ultralytics](https://github.com/ultralytics/ultralytics/tree/main/ultralytics/cfg/models/12). Their implementation is inefficient, requires more memory, and has unstable training, which are fixed here!**
-- 2025/07/01: YOLOv12's **classification** models are released, see [code](https://github.com/sunsmarterjie/yolov12/tree/Cls).
-- 2025/06/04: YOLOv12's **instance segmentation** models are released, see [code](https://github.com/sunsmarterjie/yolov12/tree/Seg).
-
-<details>
-  <summary>
-  <font size="+1">Abstract</font>
-  </summary>
-Enhancing the network architecture of the YOLO framework has been crucial for a long time but has focused on CNN-based improvements despite the proven superiority of attention mechanisms in modeling capabilities. This is because attention-based models cannot match the speed of CNN-based models. This paper proposes an attention-centric YOLO framework, namely YOLOv12, that matches the speed of previous CNN-based ones while harnessing the performance benefits of attention mechanisms.
-
-YOLOv12 surpasses all popular real-time object detectors in accuracy with competitive speed. For example, YOLOv12-N achieves 40.6% mAP with an inference latency of 1.64 ms on a T4 GPU, outperforming advanced YOLOv10-N / YOLOv11-N by 2.1%/1.2% mAP with a comparable speed. This advantage extends to other model scales. YOLOv12 also surpasses end-to-end real-time detectors that improve DETR, such as RT-DETR / RT-DETRv2: YOLOv12-S beats RT-DETR-R18 / RT-DETRv2-R18 while running 42% faster, using only 36% of the computation and 45% of the parameters.
-
-**Triple Input Enhancement for Civil Engineering**: This repository, developed by the Research Group at the Department of Civil Engineering, KMUTT, extends YOLOv12 with multi-image processing capabilities specifically optimized for civil engineering applications. The enhancement allows the model to leverage contextual information from multiple related images for improved detection accuracy in infrastructure monitoring, structural analysis, and construction site management.
-</details>
-
-## Main Results
-
-### Standard YOLOv12 (Single Input)
-**Turbo (default)**:
-| Model (det)                                                                              | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | Speed (ms) <br><sup>T4 TensorRT10<br> | params<br><sup>(M) | FLOPs<br><sup>(G) |
-| :----------------------------------------------------------------------------------- | :-------------------: | :-------------------:| :------------------------------:| :-----------------:| :---------------:|
-| [YOLO12n](https://github.com/sunsmarterjie/yolov12/releases/download/turbo/yolov12n.pt) | 640                   | 40.4                 | 1.60                            | 2.5                | 6.0               |
-| [YOLO12s](https://github.com/sunsmarterjie/yolov12/releases/download/turbo/yolov12s.pt) | 640                   | 47.6                 | 2.42                            | 9.1                | 19.4              |
-| [YOLO12m](https://github.com/sunsmarterjie/yolov12/releases/download/turbo/yolov12m.pt) | 640                   | 52.5                 | 4.27                            | 19.6               | 59.8              |
-| [YOLO12l](https://github.com/sunsmarterjie/yolov12/releases/download/turbo/yolov12l.pt) | 640                   | 53.8                 | 5.83                            | 26.5               | 82.4              |
-| [YOLO12x](https://github.com/sunsmarterjie/yolov12/releases/download/turbo/yolov12x.pt) | 640                   | 55.4                 | 10.38                           | 59.3               | 184.6             |
-
-### YOLOv12 Triple Input (Multi-Image) - KMUTT Civil Engineering
-| Model (det)                    | size<br><sup>(pixels) | Input<br><sup>Channels | mAP<sup>val<br>50-95 | Speed (ms) <br><sup>T4 TensorRT10<br> | params<br><sup>(M) | FLOPs<br><sup>(G) | Applications |
-| :----------------------------- | :-------------------: | :--------------------: | :-------------------:| :------------------------------:| :-----------------:| :---------------:| :----------- |
-| YOLO12n-triple                 | 640                   | 9 (3×RGB)             | TBD*                 | TBD*                            | 2.6                | 6.2               | Infrastructure Monitoring |
-| YOLO12s-triple                 | 640                   | 9 (3×RGB)             | TBD*                 | TBD*                            | 9.2                | 19.6              | Crack Detection |
-| YOLO12m-triple                 | 640                   | 9 (3×RGB)             | TBD*                 | TBD*                            | 19.7               | 60.1              | Structural Analysis |
-| YOLO12l-triple                 | 640                   | 9 (3×RGB)             | TBD*                 | TBD*                            | 26.6               | 82.7              | Construction Monitoring |
-| YOLO12x-triple                 | 640                   | 9 (3×RGB)             | TBD*                 | TBD*                            | 59.4               | 185.0             | Large Infrastructure |
-
-### YOLOv12 Triple Input + DINOv3 (Enhanced) - KMUTT Civil Engineering
-| Model (det)                    | size<br><sup>(pixels) | DINOv3<br><sup>Size | params<br><sup>(M) | FLOPs<br><sup>(G) | Applications |
-| :----------------------------- | :-------------------: | :-----------------: | :-----------------:| :---------------:| :----------- |
-| YOLO12n-triple-dinov3-small    | 224                   | Small (21M)         | 23.6               | TBD               | Enhanced Infrastructure Monitoring |
-| YOLO12s-triple-dinov3-small    | 224                   | Small (21M)         | 30.2               | TBD               | Advanced Crack Detection |
-| YOLO12s-triple-dinov3-small+   | 224                   | Small+ (29M)        | 31.2               | TBD               | High-Precision Crack Detection |
-| YOLO12m-triple-dinov3-base     | 224                   | Base (86M)          | 105.7              | TBD               | Precision Structural Analysis |
-| YOLO12l-triple-dinov3-large    | 224                   | Large (300M)        | 326.6              | TBD               | Research-Grade Monitoring |
-| YOLO12x-triple-dinov3-giant    | 224                   | Giant (6.7B)        | 6775.4             | TBD               | Research-Grade Large Infrastructure |
-
-### YOLOv12 Triple Input + DINOv3 Satellite (🛰️ NEW) - KMUTT Civil Engineering
-| Model (det)                       | size<br><sup>(pixels) | DINOv3<br><sup>Size | Dataset | params<br><sup>(M) | Applications |
-| :-------------------------------- | :-------------------: | :-----------------: | :------: | :-----------------:| :----------- |
-| YOLO12l-triple-dinov3-sat-large   | 224                   | ViT-L/16 (300M)     | SAT-493M | 326.6              | 🛰️ Satellite Infrastructure Monitoring |
-| YOLO12x-triple-dinov3-sat-giant   | 224                   | ViT-7B/16 (6.7B)    | SAT-493M | 6775.4             | 🛰️ Large-Scale Satellite Analysis |
-
-*TBD: To Be Determined after training on civil engineering datasets
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
+
 ```bash
-# Clone repository
-git clone https://github.com/Sompote/Triple-dino-yolov12.git
+git clone https://github.com/YOUR_USERNAME/Triple-dino-yolov12.git
 cd Triple-dino-yolov12
-
-# Install flash attention (optional but recommended)
-wget https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.3/flash_attn-2.7.3+cu11torch2.2cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-
-# Create environment
-conda create -n yolov12 python=3.11
-conda activate yolov12
-
-# Install dependencies
-pip install -r requirements.txt
 pip install -e .
+pip install transformers torch torchvision
 ```
 
-### 🔐 HuggingFace Authentication Setup (Required for DINOv3)
+### Dataset Preparation
 
-DINOv3 models require HuggingFace authentication. Set up your token:
-
-```bash
-# Method 1: Environment variable (recommended)
-export HUGGINGFACE_HUB_TOKEN="your_token_here"
-
-# Method 2: Interactive login
-pip install huggingface_hub
-huggingface-cli login
-
-# Method 3: Manual token file
-echo "your_token_here" > ~/.cache/huggingface/token
-```
-
-**Get your token from:** https://huggingface.co/settings/tokens
-
-**Required permissions when creating token:**
-- ✅ Read access to contents of all repos under your personal namespace
-- ✅ Read access to contents of all public gated repos you can access
-
-**Note:** DINOv3 models will be downloaded automatically on first use if authentication is properly configured.
-
-#### Troubleshooting Authentication
-```bash
-# Test your authentication setup
-python test_hf_auth.py
-
-# Common issues and solutions:
-
-# Issue 1: Token not found
-export HUGGINGFACE_HUB_TOKEN="hf_your_token_here"
-
-# Issue 2: Invalid token
-# - Ensure token has "Read access to contents of all public gated repos"
-# - Get new token from: https://huggingface.co/settings/tokens
-
-# Issue 3: Model access denied
-# - Some DINOv3 models may require additional permissions
-# - Contact HuggingFace support if needed
-
-# Issue 4: Network/proxy issues
-export HF_HUB_OFFLINE=0  # Ensure online mode
-```
-
-### Standard YOLOv12 Usage
-
-#### Validation
-```python
-from ultralytics import YOLO
-
-model = YOLO('yolov12n.pt')  # n/s/m/l/x
-model.val(data='coco.yaml', save_json=True)
-```
-
-#### Training
-```python
-from ultralytics import YOLO
-
-model = YOLO('yolov12n.yaml')
-results = model.train(
-    data='coco.yaml',
-    epochs=600, 
-    batch=256, 
-    imgsz=640,
-    scale=0.5,  # S:0.9; M:0.9; L:0.9; X:0.9
-    device="0,1,2,3",
-)
-```
-
-#### Prediction
-```python
-from ultralytics import YOLO
-
-model = YOLO('yolov12n.pt')
-results = model.predict('path/to/image.jpg')
-results[0].show()
-```
-
-## 🎯 Triple Input Usage
-
-### 🎨 Greyscale Version Training (3-Channel Input)
-
-The greyscale version uses **3 total channels** (1 greyscale channel per image) instead of 9 channels (3 RGB channels per image), reducing memory usage while maintaining triple input architecture benefits.
-
-#### Key Differences from RGB Version
-- **Input Channels**: 3 (greyscale) vs 9 (RGB)
-- **Memory Usage**: ~1/3 of RGB version
-- **Processing Speed**: Faster training and inference
-- **Best For**: Applications where color information is not critical (crack detection, structural monitoring, edge detection)
-
-#### Step 1: Prepare Greyscale Dataset
-
-Your dataset should follow the triple input structure, but images will be automatically converted to greyscale during training:
+Your dataset should follow YOLO format with greyscale images:
 
 ```
-dataset_root/
+dataset/
 ├── images/
-│   ├── train/
-│   │   ├── image1.jpg          # Primary images (auto-converted to greyscale)
-│   │   ├── detail1/            # Detail images 1 (auto-converted)
-│   │   └── detail2/            # Detail images 2 (auto-converted)
-│   ├── val/
-│   └── test/
+│   ├── primary/
+│   │   ├── train/  # Greyscale images
+│   │   └── val/
+│   ├── left/       # (optional for triple input)
+│   └── right/      # (optional for triple input)
 └── labels/
-    ├── train/
-    ├── val/
-    └── test/
+    └── primary/
+        ├── train/  # YOLO format labels (.txt)
+        └── val/
 ```
 
-#### Step 2: Train Greyscale Model
-
-```bash
-# ========================================
-# GREYSCALE TRAINING EXAMPLES
-# ========================================
-
-# Basic greyscale training with DINOv3 (P0 preprocessing only)
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --freeze-dinov3 \
-    --epochs 100 \
-    --batch 16
-
-# Greyscale without DINOv3 (fastest, baseline)
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --integrate nodino \
-    --epochs 100 \
-    --batch 32
-
-# Greyscale with P3 feature enhancement
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --integrate p3 \
-    --dinov3-size base \
-    --freeze-dinov3 \
-    --epochs 100 \
-    --batch 16
-
-# Greyscale with dual P0+P3 DINOv3 integration
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --integrate p0p3 \
-    --dinov3-size small \
-    --freeze-dinov3 \
-    --epochs 100 \
-    --batch 8
-
-# Greyscale with different YOLOv12 variants
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --variant n \
-    --integrate initial \
-    --dinov3-size small \
-    --batch 32
-
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --variant l \
-    --integrate initial \
-    --dinov3-size base \
-    --batch 8
-
-# Greyscale with pretrained YOLOv12 weights
-python "train_grey scale.py" \
-    --data test_triple_dataset.yaml \
-    --pretrained yolov12s.pt \
-    --integrate initial \
-    --dinov3-size small \
-    --epochs 100
-
-# Greyscale with satellite DINOv3 for aerial imagery
-python "train_grey scale.py" \
-    --data aerial_dataset.yaml \
-    --integrate initial \
-    --dinov3-size sat_large \
-    --freeze-dinov3 \
-    --epochs 100 \
-    --batch 8
-
-# ========================================
-# GREYSCALE INTEGRATION STRATEGIES
-# ========================================
-
-# Strategy 1: initial (P0 DINOv3 preprocessing only)
-# - DINOv3 processes input before YOLOv12 backbone
-# - Best for: Maximum feature enhancement, most use cases
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small
-
-# Strategy 2: nodino (No DINOv3 - standard triple greyscale)
-# - No DINOv3 integration, pure triple greyscale input
-# - Best for: Baseline comparison, limited GPU memory, fastest training
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate nodino \
-    --batch 32
-
-# Strategy 3: p3 (P3 DINOv3 feature enhancement)
-# - DINOv3 after P3 stage for mid-level feature enhancement
-# - Best for: Targeted feature enhancement
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate p3 \
-    --dinov3-size base
-
-# Strategy 4: p0p3 (Dual DINOv3 integration)
-# - DINOv3 at both P0 (input) and P3 (mid-level) stages
-# - Best for: Research, maximum enhancement, highest accuracy
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate p0p3 \
-    --dinov3-size small \
-    --batch 4
-```
-
-#### Greyscale vs RGB Comparison
-
-| Feature | Greyscale (3-channel) | RGB (9-channel) |
-|---------|----------------------|-----------------|
-| **Input Channels** | 3 (1 per image) | 9 (3 per image) |
-| **Memory Usage** | Low | High (~3x) |
-| **Training Speed** | Fast | Moderate |
-| **Batch Size** | Larger (16-32) | Smaller (8-16) |
-| **Best For** | Crack detection, edge detection, structural monitoring | Color-dependent tasks, full feature extraction |
-| **Accuracy** | Good for grayscale tasks | Better for color-dependent tasks |
-
-#### When to Use Greyscale Version
-
-✅ **Use Greyscale When:**
-- Color information is not critical for detection
-- Limited GPU memory (< 12GB VRAM)
-- Need faster training and inference
-- Working with inherently grayscale data (thermal, X-ray, etc.)
-- Crack detection, structural analysis, edge-based detection
-
-❌ **Use RGB When:**
-- Color is important for detection (e.g., corrosion vs rust)
-- Have sufficient GPU memory (>= 16GB VRAM)
-- Need maximum accuracy
-- Color differentiation is critical
-
-### Training with DINOv3 Backbone (Recommended - RGB Version)
-
-#### Step 1: Set up HuggingFace Authentication
-```bash
-# Get your token from: https://huggingface.co/settings/tokens
-export HUGGINGFACE_HUB_TOKEN="your_token_here"
-
-# Or use interactive login
-huggingface-cli login
-```
-
-#### Step 2: Train with DINOv3
-```bash
-# Standard DINOv3 integration (before backbone) 
-python train_triple_dinov3.py \
-    --data your_dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --freeze-dinov3 \
-    --epochs 100 \
-    --batch 8
-
-# No DINOv3 integration (triple input only)
-python train_triple_dinov3.py \
-    --data your_dataset.yaml \
-    --integrate nodino \
-    --epochs 100 \
-    --batch 16
-
-# DINOv3 integration after P3 stage
-python train_triple_dinov3.py \
-    --data your_dataset.yaml \
-    --integrate p3 \
-    --dinov3-size base \
-    --epochs 100 \
-    --batch 8
-
-# Compare with/without DINOv3 (automatic download)
-python train_triple_dinov3.py \
-    --data your_dataset.yaml \
-    --compare \
-    --dinov3-size small
-
-# Available DINOv3 sizes: small, small_plus, base, large, giant, sat_large, sat_giant
-# Available integration strategies: initial, nodino, p3, p0p3
-# Models are downloaded automatically from HuggingFace on first use
-
-# 🛰️ NEW: Satellite DINOv3 Training Examples
-# Satellite large model for aerial imagery
-python train_triple_dinov3.py \
-    --data aerial_dataset.yaml \
-    --integrate initial \
-    --dinov3-size sat_large \
-    --freeze-dinov3 \
-    --epochs 100 \
-    --batch 8
-
-# Satellite giant model for large-scale satellite analysis  
-python train_triple_dinov3.py \
-    --data satellite_dataset.yaml \
-    --integrate p0p3 \
-    --dinov3-size sat_giant \
-    --freeze-dinov3 \
-    --epochs 200 \
-    --batch 4 \
-    --patience 100
-```
-
-### Training with Pretrained YOLOv12 Weights
-```python
-# Using pretrained training script
-python train_triple_pretrained.py \
-    --pretrained yolov12n.pt \
-    --data your_dataset.yaml \
-    --epochs 100 \
-    --batch 16
-
-# Manual pretrained weight loading
-from ultralytics import YOLO
-from load_pretrained_triple import load_pretrained_weights_to_triple_model
-
-# Load pretrained weights into triple input model
-model = load_pretrained_weights_to_triple_model(
-    pretrained_path='yolov12n.pt',
-    triple_model_config='ultralytics/cfg/models/v12/yolov12_triple.yaml'
-)
-
-# Fine-tune with triple input data
-results = model.train(
-    data='your_dataset.yaml',
-    epochs=100,
-    batch=16,
-    lr0=0.001,      # Lower learning rate for fine-tuning
-    patience=50
-)
-```
-
-### Training from Scratch
-```python
-from ultralytics import YOLO
-
-# Load triple input model configuration
-model = YOLO('ultralytics/cfg/models/v12/yolov12_triple.yaml')
-
-# Train with automatic validation during training
-results = model.train(
-    data='your_dataset.yaml',  # Triple input dataset config
-    epochs=100,
-    batch=16,  # Smaller batch size due to 3x memory usage
-    imgsz=640,
-    val=True,        # Enable validation during training
-    patience=50,     # Early stopping patience
-    device="0,1"
-)
-
-# After training, evaluate on test set for final performance
-test_results = model.val(
-    data='your_dataset.yaml',
-    split='test'     # Use test set for final evaluation
-)
-```
-
-### Training and Evaluation Scripts
-```bash
-# Train with pretrained weights
-python train_triple_pretrained.py \
-    --pretrained yolov12n.pt \
-    --data your_dataset.yaml \
-    --epochs 100 \
-    --batch 16 \
-    --patience 50
-
-# Train from scratch
-python train_with_validation.py \
-    --model ultralytics/cfg/models/v12/yolov12_triple.yaml \
-    --data your_dataset.yaml \
-    --epochs 100 \
-    --batch 16 \
-    --patience 50
-
-# Load pretrained weights manually
-python load_pretrained_triple.py \
-    --pretrained yolov12s.pt \
-    --model ultralytics/cfg/models/v12/yolov12_triple.yaml \
-    --save yolov12s_triple_pretrained.pt
-
-# Evaluate trained model
-python -c "
-from ultralytics import YOLO
-model = YOLO('runs/detect/train/weights/best.pt')
-model.val(data='your_dataset.yaml', split='test')
-"
-```
-
-### Dataset Structure for Triple Input
-```
-dataset_root/
-├── images/
-│   ├── train/                  # Training images
-│   │   ├── image1.jpg          # Primary images
-│   │   ├── image2.jpg
-│   │   ├── detail1/            # Detail images 1
-│   │   │   ├── image1.jpg
-│   │   │   └── image2.jpg
-│   │   └── detail2/            # Detail images 2
-│   │       ├── image1.jpg
-│   │       └── image2.jpg
-│   ├── val/                    # Validation images (used during training)
-│   │   └── (same structure as train)
-│   └── test/                   # Test images (used for final evaluation)
-│       └── (same structure as train)
-└── labels/
-    ├── train/
-    │   ├── image1.txt
-    │   └── image2.txt
-    ├── val/
-    │   └── (same structure as train)
-    └── test/
-        └── (same structure as train)
-```
-
-### Triple Input Dataset Configuration
+**data.yaml** example:
 ```yaml
-# your_dataset.yaml
-path: ../datasets/your_dataset
-train: images/train    # Training set
-val: images/val        # Validation set (used during training)
-test: images/test      # Test set (used for final evaluation)
-triple_input: true     # Enable triple input mode
-nc: 80                 # Number of classes
-names: ['class1', 'class2', ...]  # Class names
+path: /path/to/dataset
+train: images/primary/train
+val: images/primary/val
+
+nc: 1  # number of classes
+names: ['object']
+
+ch: 3  # 3-channel greyscale input
 ```
 
-### Manual Triple Input Processing
-```python
-import torch
-from ultralytics.nn.modules.conv import TripleInputConv
+## Training Commands
 
-# Method 1: Create with pretrained weights
-conv = TripleInputConv.from_pretrained(
-    c1=9, c2=64, 
-    pretrained_model_path='yolov12n.pt',
-    k=3, s=2
-)
-
-# Method 2: Standard creation
-conv = TripleInputConv(c1=9, c2=64, k=3, s=2)
-
-# Create 9-channel input (3 RGB images concatenated)
-primary = torch.randn(1, 3, 640, 640)
-detail1 = torch.randn(1, 3, 640, 640)
-detail2 = torch.randn(1, 3, 640, 640)
-triple_input = torch.cat([primary, detail1, detail2], dim=1)  # [1, 9, 640, 640]
-
-# Process with TripleInputConv
-output = conv(triple_input)  # [1, 64, 320, 320]
-```
-
-## 🔧 Triple Input Architecture Details
-
-### TripleInputConv Module
-```python
-class TripleInputConv(nn.Module):
-    """Processes 9-channel input as three separate 3-channel images.
-    
-    Supports loading pretrained weights from standard YOLOv12 models.
-    """
-    
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True, pretrained_weights=None):
-        # c1: Input channels (must be 9)
-        # c2: Output channels
-        # Three separate Conv layers + fusion layer
-        # pretrained_weights: Optional pretrained weights from YOLOv12
-    
-    @classmethod
-    def from_pretrained(cls, c1, c2, pretrained_model_path, **kwargs):
-        """Create TripleInputConv with pretrained YOLOv12 weights."""
-        # Automatically loads and replicates first layer weights
-```
-
-### Key Features
-- **Input**: 9-channel tensor (3 RGB images concatenated)
-- **Processing**: Three independent 3-channel branches
-- **Fusion**: Feature combination via 1×1 convolution
-- **Pretrained Weight Support**: Compatible with YOLOv12 pretrained models
-- **Transfer Learning**: Enables fine-tuning from standard YOLOv12 weights
-- **Smart Fallback**: Uses primary image if detail images missing
-- **Memory Efficient**: Optimized for practical deployment
-
-### Architecture Comparison
-| Feature | Standard YOLOv12 | Triple Input YOLOv12 |
-|---------|------------------|---------------------|
-| Input Channels | 3 (RGB) | 9 (3×RGB) |
-| First Layer | `Conv(3, 64, 3, 2)` | `TripleInputConv(9, 64, 3, 2)` |
-| Pretrained Weights | Direct loading | Compatible via transfer learning |
-| Memory Usage | Baseline | ~3x for inputs |
-| Dataset Format | Single images | Primary + 2 detail images |
-| Fallback Support | N/A | Uses primary if details missing |
-| Training Strategy | From scratch or pretrained | From scratch or YOLOv12 pretrained |
-
-## 🧪 Quick Verification
+### Basic Training (No DINOv3) - Fastest
 
 ```bash
-# Test HuggingFace authentication
-python test_hf_auth.py
-
-# Test DINOv3 import
-python -c "from ultralytics.nn.modules.dinov3 import create_dinov3_backbone; print('DINOv3 ready')"
-
-# Test Triple Input import  
-python -c "from ultralytics.nn.modules.conv import TripleInputConv; print('Triple Input ready')"
-
-# Test model creation
-python -c "from ultralytics import YOLO; YOLO('ultralytics/cfg/models/v12/yolov12_triple.yaml'); print('Model creation successful')"
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate nodino \
+  --variant s \
+  --batch 16 \
+  --epochs 100 \
+  --imgsz 640
 ```
 
-## ⚡ Quick Commands Reference
+### DINOv3 P0 Preprocessing (Recommended)
 
 ```bash
-# Setup authentication
-export HUGGINGFACE_HUB_TOKEN="hf_your_token_here"
-
-# ========================================
-# RGB VERSION (9-channel input)
-# ========================================
-
-# Train with DINOv3 (recommended)
-python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size small
-
-# Train with satellite DINOv3 (NEW)
-python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size sat_large
-
-# Train without DINOv3 (baseline)
-python train_triple_dinov3.py --data dataset.yaml --integrate nodino --batch 16
-
-# ========================================
-# GREYSCALE VERSION (3-channel input)
-# ========================================
-
-# Train greyscale with DINOv3 (recommended for limited GPU memory)
-python "train_grey scale.py" --data dataset.yaml --integrate initial --dinov3-size small --batch 16
-
-# Train greyscale without DINOv3 (fastest, baseline)
-python "train_grey scale.py" --data dataset.yaml --integrate nodino --batch 32
-
-# Train greyscale with satellite DINOv3
-python "train_grey scale.py" --data dataset.yaml --integrate initial --dinov3-size sat_large --batch 8
-
-# ========================================
-# UTILITIES
-# ========================================
-
-# Download DINOv3 models manually
-python download_dinov3.py --model sat_giant --test
-
-# See full CLI reference: 📋 CLI Arguments Reference section below
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate initial \
+  --dinov3-size small \
+  --variant s \
+  --batch 16 \
+  --epochs 100 \
+  --imgsz 640
 ```
 
-## 🎨 Web Demo
+### DINOv3 P3 Feature Enhancement
+
 ```bash
-python app.py
-# Visit http://127.0.0.1:7860
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate p3 \
+  --dinov3-size small \
+  --variant m \
+  --batch 8 \
+  --epochs 100 \
+  --imgsz 640
 ```
 
-## 📊 Export Models
+### Dual DINOv3 Integration (P0 + P3) - Maximum Accuracy
+
+```bash
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate p0p3 \
+  --dinov3-size small \
+  --variant l \
+  --batch 4 \
+  --epochs 100 \
+  --imgsz 640
+```
+
+## Model Variants
+
+| Variant | Width Scale | Parameters | Use Case |
+|---------|-------------|------------|----------|
+| **n** | 0.25 | ~2.5M | Mobile/Edge devices, fastest |
+| **s** | 0.50 | ~9M | Balanced speed/accuracy (default) |
+| **m** | 1.00 | ~20M | High accuracy |
+| **l** | 1.00 | ~26M | Production |
+| **x** | 1.50 | ~59M | Maximum accuracy |
+
+## Integration Strategies
+
+### 1. `nodino` - Standard YOLO (Fastest)
+No DINOv3 integration. Best for baseline or limited GPU memory.
+
+```bash
+--integrate nodino --batch 32
+```
+
+### 2. `initial` - P0 Preprocessing (Recommended)
+DINOv3 preprocesses input before YOLO backbone. Best balance of accuracy and speed.
+
+```bash
+--integrate initial --dinov3-size small --batch 16
+```
+
+### 3. `p3` - P3 Feature Enhancement
+DINOv3 enhances features after P3 stage. Good for fine-grained detection.
+
+```bash
+--integrate p3 --dinov3-size small --batch 8
+```
+
+### 4. `p0p3` - Dual Integration (Maximum Accuracy)
+DINOv3 at both P0 and P3. Slower but most accurate.
+
+```bash
+--integrate p0p3 --dinov3-size small --batch 4
+```
+
+## Training Options
+
+### Image Size
+
+```bash
+# 640px (YOLO standard, recommended)
+--imgsz 640
+
+# 224px (DINOv3 optimal, faster)
+--imgsz 224
+
+# 1024px (high resolution, slower)
+--imgsz 1024
+```
+
+### Batch Size Recommendations
+
+```bash
+# Small GPU (4-6GB)
+--batch 4 --variant n
+
+# Medium GPU (8-12GB)
+--batch 16 --variant s
+
+# Large GPU (24GB+)
+--batch 32 --variant l
+```
+
+### DINOv3 Model Sizes
+
+**Note**: Use DINOv2 models (no authentication required)
+
+| Size | Parameters | Speed | Accuracy |
+|------|------------|-------|----------|
+| **small** | 22M | ⚡⚡⚡ | Good (default) |
+| **base** | 86M | ⚡⚡ | Better |
+| **large** | 300M | ⚡ | Best |
+
+```bash
+# Small (recommended)
+--dinov3-size small
+
+# Base (higher accuracy)
+--dinov3-size base
+
+# Large (maximum accuracy)
+--dinov3-size large
+```
+
+## Inference
+
 ```python
 from ultralytics import YOLO
 
-# Standard model
-model = YOLO('yolov12n.pt')
-model.export(format="engine", half=True)  # TensorRT
+# Load trained model
+model = YOLO('runs/train/yolov12_triple_grey/weights/best.pt')
 
-# Triple input model  
-model = YOLO('ultralytics/cfg/models/v12/yolov12_triple.yaml')
-model.export(format="onnx")  # ONNX format
-```
-
-## 🔧 Advanced Configuration
-
-### Memory Optimization for Triple Input
-```python
-# Reduce batch size for triple input training
-model.train(
-    data='triple_dataset.yaml',
-    batch=8,  # Reduced from 16 due to 3x memory usage
-    workers=4,
-    cache=False,  # Disable caching to save memory
-    amp=True,     # Use automatic mixed precision
-)
-```
-
-### Custom Triple Input Dataset Creation
-```python
-from pathlib import Path
-import cv2
-
-def create_triple_dataset(base_dir):
-    """Create triple input dataset structure with train/val/test splits."""
-    base_dir = Path(base_dir)
-    
-    # Create directory structure for train/val/test splits
-    for split in ['train', 'val', 'test']:
-        (base_dir / f'images/{split}').mkdir(parents=True, exist_ok=True)
-        (base_dir / f'images/{split}/detail1').mkdir(parents=True, exist_ok=True) 
-        (base_dir / f'images/{split}/detail2').mkdir(parents=True, exist_ok=True)
-        (base_dir / f'labels/{split}').mkdir(parents=True, exist_ok=True)
-    
-    print(f"Triple input dataset structure created at {base_dir}")
-    print("Remember:")
-    print("- Use 'train' for training")
-    print("- Use 'val' for validation during training")
-    print("- Use 'test' for final evaluation after training")
-
-# Usage
-create_triple_dataset("my_triple_dataset")
-```
-
-## 📚 Documentation
-
-For detailed documentation on the triple input and DINOv3 implementation, see:
-
-### DINOv3 Integration
-- [download_dinov3.py](download_dinov3.py) - DINOv3 model downloader (optional, automatic in training)
-- [train_triple_dinov3.py](train_triple_dinov3.py) - Training script with DINOv3 backbone
-- [ultralytics/nn/modules/dinov3.py](ultralytics/nn/modules/dinov3.py) - DINOv3 backbone implementation
-- [ultralytics/cfg/models/v12/yolov12_triple_dinov3.yaml](ultralytics/cfg/models/v12/yolov12_triple_dinov3.yaml) - DINOv3 model configuration
-
-### Triple Input Implementation
-- [TRIPLE_INPUT_README.md](TRIPLE_INPUT_README.md) - Comprehensive implementation guide
-- [train_triple_pretrained.py](train_triple_pretrained.py) - Training with pretrained weights
-- [load_pretrained_triple.py](load_pretrained_triple.py) - Pretrained weight loading utilities
-- [train_with_validation.py](train_with_validation.py) - Training script for training from scratch
-- [debug_triple.py](debug_triple.py) - Debug utilities
-
-
-## 🔄 Migration Guide
-
-### From Standard YOLOv12 to Triple Input
-
-1. **Update model configuration**: Use `yolov12_triple.yaml` instead of `yolov12.yaml`
-2. **Prepare dataset**: Organize in triple input structure with train/val/test splits
-3. **Adjust training parameters**: Reduce batch size due to increased memory usage
-4. **Update data config**: Add `triple_input: true` and specify train/val/test splits
-5. **Update workflow**: Use validation during training and test set for final evaluation
-
-### Example Migration
-```python
-# Before (Standard YOLOv12)
-model = YOLO('yolov12n.yaml')
-model.train(data='coco.yaml', batch=32)
-
-# After Option 1: Triple Input with DINOv3 (RECOMMENDED - automatic download)
-# python train_triple_dinov3.py --data your_dataset.yaml --dinov3-size small --freeze-dinov3 --epochs 100 --batch 8
-
-# After Option 2: Triple Input with pretrained weights
-from load_pretrained_triple import load_pretrained_weights_to_triple_model
-
-# Load pretrained weights into triple input model
-model = load_pretrained_weights_to_triple_model(
-    pretrained_path='yolov12n.pt',
-    triple_model_config='ultralytics/cfg/models/v12/yolov12_triple.yaml'
+# Predict
+results = model.predict(
+    source='path/to/greyscale/images',
+    conf=0.25,
+    imgsz=640,
+    save=True
 )
 
-# Fine-tune with triple input data
-model.train(
-    data='your_dataset.yaml', 
-    batch=16,
-    lr0=0.001,       # Lower learning rate for fine-tuning
-    val=True,        # Enable validation during training
-    patience=50      # Early stopping
-)
+# Process results
+for r in results:
+    boxes = r.boxes
+    print(f"Detected {len(boxes)} objects")
+```
 
-# Final evaluation on test set
-model.val(data='your_dataset.yaml', split='test')
+## Validation
 
-# After Option 3: Triple Input with DINOv3 programmatically
+```bash
+python val.py \
+  --model runs/train/yolov12_triple_grey/weights/best.pt \
+  --data dataset.yaml \
+  --imgsz 640
+```
+
+## Export Models
+
+```python
 from ultralytics import YOLO
-model = YOLO('ultralytics/cfg/models/v12/yolov12_triple_dinov3.yaml')
-model.train(
-    data='your_dataset.yaml',
-    epochs=100,
-    batch=8,        # Smaller batch for DINOv3
-    imgsz=224,      # DINOv3 optimized size
-    lr0=0.001,      # Lower LR for frozen DINOv3
-    optimizer='AdamW'
-)
+
+model = YOLO('runs/train/yolov12_triple_grey/weights/best.pt')
+
+# Export to ONNX
+model.export(format="onnx")
+
+# Export to TensorRT
+model.export(format="engine", half=True)
 ```
 
-## 🤝 Contributing
+## Complete Training Examples
 
-We welcome contributions to the triple input implementation from the civil engineering and computer vision communities! Please:
+### Quick Start - Balanced Performance
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
+```bash
+# Recommended starting point
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate initial \
+  --dinov3-size small \
+  --variant s \
+  --batch 16 \
+  --epochs 100 \
+  --imgsz 640
+```
 
-## 🏫 About KMUTT Civil Engineering Research Group
+### Fast Training - No DINOv3
 
-This implementation is developed by the Research Group at the Department of Civil Engineering, King Mongkut's University of Technology Thonburi (KMUTT). Our research focuses on applying advanced computer vision and AI techniques to civil engineering challenges including:
+```bash
+# Fastest training, good baseline
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate nodino \
+  --variant s \
+  --batch 32 \
+  --epochs 100 \
+  --imgsz 640
+```
 
-- **Infrastructure Monitoring**: Automated inspection and condition assessment
-- **Structural Health Monitoring**: Real-time analysis of structural integrity
-- **Construction Management**: Site monitoring and safety analysis
-- **Smart Cities**: Urban infrastructure analysis and planning
+### High Accuracy - Large Model
 
-For collaboration opportunities or research inquiries, please contact the research group.
+```bash
+# Maximum accuracy
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate p0p3 \
+  --dinov3-size base \
+  --variant l \
+  --batch 4 \
+  --epochs 200 \
+  --imgsz 640
+```
 
-## 📝 License
+### Small GPU - Memory Optimized
 
-This project is licensed under the AGPL-3.0 License - see the original YOLOv12 license.
+```bash
+# For GPUs with 4-6GB VRAM
+python "train_grey scale.py" \
+  --data dataset.yaml \
+  --integrate nodino \
+  --variant n \
+  --batch 8 \
+  --epochs 100 \
+  --imgsz 416
+```
 
-## 🙏 Acknowledgements
+## Troubleshooting
 
-- **KMUTT Civil Engineering Research Group** for the triple input architecture development and DINOv3 integration
-- **Meta AI Research** for [DINOv3](https://github.com/facebookresearch/dinov3) - self-supervised vision transformer foundation models
-- **HuggingFace** for model hosting and transformers library integration
-- Original YOLOv12 by [Yunjie Tian](https://sunsmarterjie.github.io/) et al.
-- Triple input architecture inspired by [triple_YOLO13](https://github.com/Sompote/triple_YOLO13)
-- Built on [ultralytics](https://github.com/ultralytics/ultralytics) framework
-- King Mongkut's University of Technology Thonburi (KMUTT) for research support
+### Out of Memory
+```bash
+# Reduce batch size
+--batch 4
 
-## 📖 Citation
+# Reduce image size
+--imgsz 416
+
+# Use smaller variant
+--variant n
+
+# Disable DINOv3
+--integrate nodino
+```
+
+### Slow Training
+```bash
+# Use nodino (no DINOv3)
+--integrate nodino --batch 32
+
+# Reduce image size
+--imgsz 224
+
+# Use nano variant
+--variant n
+```
+
+### DINOv3 Authentication Error
+DINOv2 models are now used by default and don't require authentication. If you see auth errors, the code will automatically fall back to DINOv2.
+
+## Performance Tips
+
+1. **Start with `--integrate initial --variant s`** for best balance
+2. **Use `--imgsz 640`** for standard YOLO performance
+3. **Use `--integrate nodino`** for fastest training
+4. **Adjust batch size** based on GPU memory
+5. **Use variant `n`** for edge devices or real-time inference
+
+## Command Line Arguments
+
+```bash
+# Required
+--data YAML_FILE          # Dataset configuration
+
+# Model Selection
+--variant {n,s,m,l,x}     # Model size (default: s)
+--integrate STRATEGY      # initial, nodino, p3, p0p3 (default: initial)
+--dinov3-size SIZE        # small, base, large (default: small)
+
+# Training Parameters
+--epochs INT              # Training epochs (default: 100)
+--batch INT               # Batch size (default: 8)
+--imgsz INT               # Image size (default: 640)
+--device DEVICE           # GPU device: 0, cpu, or 0,1,2,3
+
+# Advanced Options
+--patience INT            # Early stopping patience (default: 50)
+--freeze-dinov3          # Freeze DINOv3 weights (default)
+--unfreeze-dinov3        # Fine-tune DINOv3
+--name NAME               # Experiment name
+```
+
+## Model Configuration Files
+
+All configs support 3-channel greyscale input:
+
+- `yolov12_triple_greyscale.yaml` - Base greyscale model
+- `yolov12_triple_dinov3_p0_only.yaml` - P0 preprocessing only
+- `yolov12_triple_dinov3_p3.yaml` - P3 enhancement only
+- `yolov12_triple_dinov3_p0p3_adapter.yaml` - Dual integration
+
+## License
+
+AGPL-3.0 License
+
+## Citation
 
 ```bibtex
-@article{tian2025yolov12,
-  title={YOLOv12: Attention-Centric Real-Time Object Detectors},
-  author={Tian, Yunjie and Ye, Qixiang and Doermann, David},
-  journal={arXiv preprint arXiv:2502.12524},
-  year={2025}
-}
-
-@misc{yolov12_triple_input,
-  title={YOLOv12 Triple Input with DINOv3 Integration for Civil Engineering Applications},
-  author={Research Group, Department of Civil Engineering, KMUTT},
-  institution={King Mongkut's University of Technology Thonburi},
+@misc{yolov12-triple-greyscale,
+  title={YOLOv12 Triple Greyscale with DINOv3 Integration},
   year={2025},
-  note={Multi-image object detection enhancement with DINOv3 vision transformer backbone for infrastructure monitoring and analysis}
-}
-
-@misc{dinov3,
-  title={DINOv3: Learning Robust Visual Features without Supervision},
-  author={Oquab, Maxime and Darcet, Timothée and Moutakanni, Theo and Vo, Huy V. and Szafraniec, Marc and Khalidov, Vasil and Fernandez, Pierre and Haziza, Daniel and Massa, Francisco and El-Nouby, Alaaeldin and Howes, Russell and Huang, Po-Yao and Xu, Hu and Sharma, Vasu and Li, Shang-Wen and Galuba, Wojciech and Rabbat, Mike and Assran, Mido and Ballas, Nicolas and Synnaeve, Gabriel and Misra, Ishan and Jegou, Herve and Mairal, Julien and Labatut, Patrick and Joulin, Armand and Bojanowski, Piotr},
-  year={2023},
-  eprint={2304.07193},
-  archivePrefix={arXiv},
-  primaryClass={cs.CV}
+  publisher={GitHub},
+  url={https://github.com/YOUR_USERNAME/Triple-dino-yolov12}
 }
 ```
 
----
-
-## 📋 Complete CLI Reference
-
-### `train_triple_dinov3.py` - Main Training Script
-
-The primary training script for YOLOv12 with triple input and optional DINOv3 integration.
-
-#### Core Training Arguments
-| Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `--data` | str | **required** | Path to dataset configuration (.yaml file) |
-| `--epochs` | int | `100` | Number of training epochs |
-| `--batch` | int | `8` | Batch size (reduce for larger models or limited GPU memory) |
-| `--device` | str | `0` | GPU device(s) to use: `0`, `cpu`, or `0,1,2,3` for multi-GPU |
-| `--variant` | str | `s` | YOLOv12 model size: `n` (nano), `s` (small), `m` (medium), `l` (large), `x` (extra large) |
-| `--imgsz` | int | `224` | Input image size (224 optimized for DINOv3, 640 for standard) |
-| `--name` | str | `yolov12_triple_dinov3` | Experiment name for run directory in `runs/detect/` |
-| `--patience` | int | `50` | Early stopping patience in epochs |
-| `--save-period` | int | `-1` | Save checkpoint every N epochs (`-1` = only best/last) |
-| `--pretrained` | str | `None` | Path to pretrained YOLOv12 weights (.pt file) |
-
-#### DINOv3 Integration Arguments
-
-**Integration Strategy** (`--integrate`)
-
-Controls where and how DINOv3 is integrated into the architecture:
-
-| Value | Description | Config File | When to Use |
-|-------|-------------|-------------|-------------|
-| `initial` | DINOv3 **before** YOLOv12 backbone (P0 stage) | `yolov12_triple_dinov3.yaml` | **Default.** Maximum feature enhancement, best for most use cases |
-| `nodino` | **No DINOv3** - triple input only | `yolov12_triple.yaml` | Baseline comparison, faster training, limited GPU memory |
-| `p3` | DINOv3 **after P3 stage** | `yolov12_triple_dinov3_p3.yaml` | Targeted mid-level feature enhancement |
-| `p0p3` | **Dual DINOv3** at P0 and P3 stages | `yolov12_triple_dinov3_p0p3.yaml` | Research use, maximum enhancement (highest memory) |
-
-**DINOv3 Model Size** (`--dinov3-size`)
-
-| Size | Parameters | Input Resolution | Dataset | Best For | Memory Usage |
-|------|------------|------------------|---------|----------|--------------|
-| `small` | 21M | 224×224 | ImageNet-1K | **Default.** Balanced performance/speed | 💾 |
-| `small_plus` | 29M | 224×224 | ImageNet-1K | Improved features vs small | 💾 |
-| `base` | 86M | 224×224 | ImageNet-1K | Higher accuracy | 💾💾 |
-| `large` | 300M | 224×224 | ImageNet-1K | Research-grade accuracy | 💾💾💾 |
-| `giant` | 6.7B | 224×224 | ImageNet-1K | Maximum performance | 💾💾💾💾 |
-| `sat_large` | 300M | 224×224 | **SAT-493M** | 🛰️ Satellite/aerial imagery | 💾💾💾 |
-| `sat_giant` | 6.7B | 224×224 | **SAT-493M** | 🛰️ Large-scale satellite analysis | 💾💾💾💾 |
-
-**DINOv3 Training Options**
-
-| Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `--freeze-dinov3` | flag | `True` | **Freeze** DINOv3 weights during training (recommended for transfer learning) |
-| `--unfreeze-dinov3` | flag | `False` | Allow DINOv3 fine-tuning (requires more memory and careful learning rate) |
-| `--triple-branches` | flag | `False` | Use separate DINOv3 branches for each of the 3 input images |
-
-#### YOLOv12 Model Variants (`--variant`)
-
-| Variant | Depth | Width | Max Channels | Parameters | Speed | Best For |
-|---------|-------|-------|--------------|------------|-------|----------|
-| **n** (nano) | 0.50 | 0.25 | 1024 | ~2.5M | ⚡⚡⚡ | Edge devices, real-time inference |
-| **s** (small) | 0.50 | 0.50 | 1024 | ~9M | ⚡⚡ | **Default.** Balanced performance |
-| **m** (medium) | 0.50 | 1.00 | 512 | ~20M | ⚡ | Good accuracy with reasonable speed |
-| **l** (large) | 1.00 | 1.00 | 512 | ~27M | ⚡ | High accuracy applications |
-| **x** (extra large) | 1.00 | 1.50 | 512 | ~59M | ⚡ | Maximum accuracy, research |
-
-#### Additional Options
-
-| Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `--compare` | flag | `False` | Train both with and without DINOv3 for comparison |
-| `--download-only` | flag | `False` | Download DINOv3 models and exit without training |
-
-#### Example Commands
-
-```bash
-# ========================================
-# BASIC TRAINING EXAMPLES
-# ========================================
-
-# Recommended starting point - small YOLOv12 + small DINOv3
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --variant s \
-    --freeze-dinov3
-
-# Baseline without DINOv3 (faster, less accurate)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate nodino \
-    --variant s \
-    --batch 16
-
-# ========================================
-# SATELLITE/AERIAL IMAGERY
-# ========================================
-
-# Satellite imagery with sat_large DINOv3
-python train_triple_dinov3.py \
-    --data satellite_dataset.yaml \
-    --integrate initial \
-    --dinov3-size sat_large \
-    --variant l \
-    --freeze-dinov3 \
-    --epochs 100
-
-# Large-scale satellite with sat_giant DINOv3
-python train_triple_dinov3.py \
-    --data satellite_dataset.yaml \
-    --integrate initial \
-    --dinov3-size sat_giant \
-    --variant x \
-    --freeze-dinov3 \
-    --batch 4 \
-    --epochs 200
-
-# ========================================
-# DIFFERENT INTEGRATION STRATEGIES
-# ========================================
-
-# P3 integration (DINOv3 after P3 stage)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate p3 \
-    --dinov3-size base \
-    --variant m
-
-# Dual P0+P3 integration (maximum enhancement)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate p0p3 \
-    --dinov3-size small \
-    --variant s \
-    --batch 4
-
-# ========================================
-# DIFFERENT YOLOV12 VARIANTS
-# ========================================
-
-# Nano variant (fastest inference)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --variant n \
-    --batch 16
-
-# Extra large variant (maximum accuracy)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size large \
-    --variant x \
-    --batch 4 \
-    --epochs 200
-
-# ========================================
-# DINOV3 SIZE VARIATIONS
-# ========================================
-
-# Small+ DINOv3 (better than small)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small_plus \
-    --variant s
-
-# Base DINOv3 (good accuracy)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size base \
-    --variant m \
-    --batch 6
-
-# Large DINOv3 (research-grade)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size large \
-    --variant l \
-    --batch 2
-
-# Giant DINOv3 (maximum performance)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size giant \
-    --variant x \
-    --batch 1 \
-    --epochs 300
-
-# ========================================
-# FINE-TUNING & ADVANCED
-# ========================================
-
-# Fine-tune DINOv3 (unfreeze backbone)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size base \
-    --unfreeze-dinov3 \
-    --batch 4 \
-    --epochs 200 \
-    --patience 100
-
-# Load pretrained YOLOv12 weights
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --pretrained yolov12s.pt \
-    --integrate initial \
-    --dinov3-size small
-
-# Use separate DINOv3 branches per input
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --triple-branches
-
-# ========================================
-# DISK SPACE & CHECKPOINT MANAGEMENT
-# ========================================
-
-# Default - save only best/last (minimal disk usage)
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --save-period -1
-
-# Save checkpoints every 20 epochs
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size base \
-    --save-period 20
-
-# ========================================
-# MULTI-GPU TRAINING
-# ========================================
-
-# Train on multiple GPUs
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --device 0,1,2,3 \
-    --batch 32
-
-# ========================================
-# MODEL COMPARISON
-# ========================================
-
-# Compare with and without DINOv3
-python train_triple_dinov3.py \
-    --data dataset.yaml \
-    --compare \
-    --dinov3-size small \
-    --variant s
-```
-
----
-
-### `download_dinov3.py` - DINOv3 Model Downloader
-
-Download DINOv3 models manually (optional, as training script downloads automatically).
-
-#### Arguments
-
-| Argument | Type | Choices | Default | Description |
-|----------|------|---------|---------|-------------|
-| `--model` | str | `small`, `small_plus`, `base`, `large`, `giant`, `sat_large`, `sat_giant` | `small` | DINOv3 model size to download |
-| `--cache-dir` | str | - | `~/.cache/yolov12_dinov3` | Directory to cache downloaded models |
-| `--method` | str | `hf`, `timm`, `auto` | `auto` | Download method (HuggingFace, timm, or auto-select) |
-| `--test` | flag | - | `False` | Test model loading after download |
-| `--all` | flag | - | `False` | Download all available DINOv3 models |
-| `--force` | flag | - | `False` | Force re-download even if model exists in cache |
-
-#### Examples
-
-```bash
-# Download and test a specific model
-python download_dinov3.py --model base --test
-
-# Download satellite models
-python download_dinov3.py --model sat_large --test
-python download_dinov3.py --model sat_giant
-
-# Download all models to custom directory
-python download_dinov3.py --all --cache-dir ./my_models
-
-# Force re-download with specific method
-python download_dinov3.py --model small --force --method hf
-```
-
----
-
-### `test_hf_auth.py` - HuggingFace Authentication Tester
-
-Test your HuggingFace authentication setup before training.
-
-#### Usage
-
-```bash
-# Test authentication
-python test_hf_auth.py
-
-# Expected output if successful:
-# ✓ HuggingFace token found
-# ✓ Token is valid
-# ✓ Can access gated models
-```
-
----
-
-### `train_grey scale.py` - Greyscale Version Training Script
-
-Training script for YOLOv12 Triple Input with greyscale images (3 channels total instead of 9).
-
-#### Core Arguments
-
-All arguments from `train_triple_dinov3.py` are supported with identical functionality:
-
-| Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `--data` | str | **required** | Path to dataset configuration (.yaml file) |
-| `--epochs` | int | `100` | Number of training epochs |
-| `--batch` | int | `8` | Batch size (can use larger values due to lower memory usage) |
-| `--device` | str | `0` | GPU device(s) to use |
-| `--variant` | str | `s` | YOLOv12 model size: `n`, `s`, `m`, `l`, `x` |
-| `--imgsz` | int | `224` | Input image size |
-| `--name` | str | `yolov12_triple_dinov3_greyscale` | Experiment name |
-| `--patience` | int | `50` | Early stopping patience |
-| `--save-period` | int | `-1` | Save checkpoint every N epochs |
-| `--pretrained` | str | `None` | Path to pretrained YOLOv12 weights |
-
-#### Greyscale-Specific Integration Strategies
-
-| Value | Description | Best For |
-|-------|-------------|----------|
-| `initial` | P0 DINOv3 preprocessing (3-channel greyscale input) | General use, maximum enhancement |
-| `nodino` | No DINOv3 - standard triple greyscale | Baseline, fastest training, limited GPU |
-| `p3` | P3 DINOv3 feature enhancement | Mid-level feature enhancement |
-| `p0p3` | Dual DINOv3 at P0 and P3 | Research, maximum accuracy |
-
-#### DINOv3 Options (Identical to RGB Version)
-
-All DINOv3 sizes and options are supported:
-- `--dinov3-size`: `small`, `small_plus`, `base`, `large`, `giant`, `sat_large`, `sat_giant`
-- `--freeze-dinov3`: Freeze DINOv3 weights (recommended)
-- `--unfreeze-dinov3`: Fine-tune DINOv3 weights
-- `--triple-branches`: Separate DINOv3 branches per input
-
-#### Example Commands
-
-```bash
-# ========================================
-# GREYSCALE QUICK START
-# ========================================
-
-# Recommended: Small YOLOv12 + DINOv3 greyscale
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --variant s \
-    --freeze-dinov3 \
-    --batch 16
-
-# Fast baseline without DINOv3
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate nodino \
-    --variant s \
-    --batch 32
-
-# ========================================
-# GREYSCALE FOR DIFFERENT APPLICATIONS
-# ========================================
-
-# Crack detection (greyscale ideal)
-python "train_grey scale.py" \
-    --data crack_dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --variant m \
-    --epochs 150 \
-    --batch 16
-
-# Structural monitoring (edge-based)
-python "train_grey scale.py" \
-    --data structure_dataset.yaml \
-    --integrate p3 \
-    --dinov3-size base \
-    --variant l \
-    --batch 8
-
-# Satellite imagery (greyscale for faster processing)
-python "train_grey scale.py" \
-    --data satellite_dataset.yaml \
-    --integrate initial \
-    --dinov3-size sat_large \
-    --variant l \
-    --batch 8 \
-    --epochs 200
-
-# ========================================
-# GREYSCALE VARIANTS COMPARISON
-# ========================================
-
-# Nano - fastest inference
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --variant n \
-    --integrate initial \
-    --dinov3-size small \
-    --batch 32
-
-# Large - high accuracy
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --variant l \
-    --integrate initial \
-    --dinov3-size base \
-    --batch 8
-
-# ========================================
-# MEMORY-CONSTRAINED SCENARIOS
-# ========================================
-
-# Low VRAM (< 8GB) - greyscale without DINOv3
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate nodino \
-    --variant n \
-    --batch 32 \
-    --imgsz 640
-
-# Medium VRAM (8-12GB) - greyscale with small DINOv3
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate initial \
-    --dinov3-size small \
-    --variant s \
-    --batch 16
-
-# High VRAM (>= 16GB) - greyscale with large DINOv3
-python "train_grey scale.py" \
-    --data dataset.yaml \
-    --integrate p0p3 \
-    --dinov3-size base \
-    --variant l \
-    --batch 8
-```
-
-#### Greyscale Performance Tips
-
-**Memory Optimization:**
-```bash
-# Use larger batch sizes than RGB version (2-4x larger)
-python "train_grey scale.py" --data dataset.yaml --batch 32
-
-# Enable on-device caching for faster training
-python "train_grey scale.py" --data dataset.yaml --cache
-
-# Use mixed precision training
-python "train_grey scale.py" --data dataset.yaml --amp
-```
-
-**Speed Optimization:**
-```bash
-# Disable DINOv3 for fastest training
-python "train_grey scale.py" --integrate nodino --batch 32
-
-# Use smaller image size for faster processing
-python "train_grey scale.py" --imgsz 320 --batch 32
-
-# Use nano variant for maximum speed
-python "train_grey scale.py" --variant n --batch 32
-```
-
----
-
-### Environment Variables
-
-| Variable | Description | Example | Required |
-|----------|-------------|---------|----------|
-| `HUGGINGFACE_HUB_TOKEN` | HuggingFace API token for model downloads | `hf_xxxxxxxxxxxxx` | **Yes** (for DINOv3) |
-| `HF_TOKEN` | Alternative HuggingFace token variable | `hf_xxxxxxxxxxxxx` | No |
-| `CUDA_VISIBLE_DEVICES` | Limit visible GPU devices to script | `0,1` | No |
-| `HF_HUB_OFFLINE` | Force offline mode (use cached models only) | `1` | No |
-
-#### Setting Environment Variables
-
-```bash
-# Method 1: Export in shell (recommended for sessions)
-export HUGGINGFACE_HUB_TOKEN="hf_your_token_here"
-
-# Method 2: Add to ~/.bashrc or ~/.zshrc (permanent)
-echo 'export HUGGINGFACE_HUB_TOKEN="hf_your_token_here"' >> ~/.bashrc
-source ~/.bashrc
-
-# Method 3: Inline with command (one-time use)
-HUGGINGFACE_HUB_TOKEN="hf_your_token_here" python train_triple_dinov3.py --data dataset.yaml
-
-# Limit GPUs
-export CUDA_VISIBLE_DEVICES=0,1
-```
-
----
-
-### Quick Reference Card
-
-```bash
-# ========================================
-# MOST COMMON COMMANDS
-# ========================================
-
-# 1. Basic training with DINOv3
-python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size small
-
-# 2. Satellite imagery training
-python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size sat_large
-
-# 3. Baseline without DINOv3
-python train_triple_dinov3.py --data dataset.yaml --integrate nodino --batch 16
-
-# 4. High accuracy with large models
-python train_triple_dinov3.py --data dataset.yaml --integrate initial --dinov3-size base --variant l
-
-# 5. Download models only
-python download_dinov3.py --model base --test
-
-# 6. Test authentication
-python test_hf_auth.py
-```
-
----
-
-### Integration Strategy Selection Guide
-
-Choose the right integration strategy for your use case:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     INTEGRATION STRATEGY                    │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  initial (DEFAULT)                                          │
-│  ├─ DINOv3 before backbone (P0)                            │
-│  ├─ Best for: General use, maximum enhancement             │
-│  └─ Use: --integrate initial                               │
-│                                                             │
-│  nodino                                                     │
-│  ├─ No DINOv3 integration                                  │
-│  ├─ Best for: Baseline, faster training, limited GPU       │
-│  └─ Use: --integrate nodino                                │
-│                                                             │
-│  p3                                                         │
-│  ├─ DINOv3 after P3 stage                                  │
-│  ├─ Best for: Mid-level feature enhancement                │
-│  └─ Use: --integrate p3                                    │
-│                                                             │
-│  p0p3                                                       │
-│  ├─ Dual DINOv3 at P0 and P3                               │
-│  ├─ Best for: Research, maximum enhancement                │
-│  └─ Use: --integrate p0p3                                  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### DINOv3 Size Selection Guide
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        DINOV3 SIZE                               │
-├──────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  STANDARD MODELS (ImageNet-1K trained)                          │
-│  ├─ small (21M)          → Default, best balance                │
-│  ├─ small_plus (29M)     → Better features than small           │
-│  ├─ base (86M)           → Good accuracy                         │
-│  ├─ large (300M)         → Research-grade                        │
-│  └─ giant (6.7B)         → Maximum performance                   │
-│                                                                  │
-│  SATELLITE MODELS (SAT-493M trained)                            │
-│  ├─ sat_large (300M)     → Aerial/satellite imagery             │
-│  └─ sat_giant (6.7B)     → Large-scale satellite analysis       │
-│                                                                  │
-│  Selection tips:                                                │
-│  • Start with 'small' for experimentation                       │
-│  • Use 'sat_large' or 'sat_giant' for satellite/aerial data    │
-│  • Increase size if you have GPU memory and need accuracy      │
-│  • Larger models require smaller batch sizes                    │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
-```
-
----
-
-<div align="center">
-
-**🚀 Ready to enhance your object detection with triple input architecture and DINOv3? Get started now!**
-
-[🤖 DINOv3 Training](train_triple_dinov3.py) | [📥 Download DINOv3](download_dinov3.py) | [📚 Documentation](TRIPLE_INPUT_README.md) | [🔧 Pretrained Training](train_triple_pretrained.py) | [⚙️ Configuration](ultralytics/cfg/models/v12/yolov12_triple_dinov3.yaml)
-
-</div>
+## Acknowledgements
+
+- YOLOv12 architecture by Yunjie Tian et al.
+- DINOv2 by Meta AI
+- Ultralytics YOLO implementation
