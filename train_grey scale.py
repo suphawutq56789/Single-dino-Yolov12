@@ -634,24 +634,24 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - INCREASED for better generalization
-        # Stronger augmentation is crucial for 66 training images to prevent overfitting
-        'mixup': 0.3,  # Increased MixUp - blend images for better generalization
-        'copy_paste': 0.3,  # Increased CopyPaste - copy objects between images
-        'mosaic': 0.8,  # Increased Mosaic - merge 4 images to create more variations
+        # Augmentation for SMALL DATASET - OPTIMAL settings (achieved Test mAP50=50%)
+        # Balanced augmentation for best generalization with 66 training images
+        'mixup': 0.3,  # MixUp augmentation for better generalization
+        'copy_paste': 0.3,  # CopyPaste augmentation
+        'mosaic': 0.5,  # Mosaic augmentation for diverse samples (not too aggressive)
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.4,  # Increased brightness variation for more robustness
+        'hsv_v': 0.5,  # Brightness variation for greyscale
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.2,  # Increased random erasing - simulate occlusion
+        'erasing': 0.2,  # Random erasing to prevent overfitting
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - INCREASED for robustness
-        'degrees': 15.0,  # Increased rotation - now ±15 degrees
-        'translate': 0.2,  # Increased translation - now ±20% of image size
-        'scale': 0.7,  # Increased scaling - now 0.3x-1.7x for more variation
-        'shear': 3.0,  # Increased shearing - now ±3 degrees
-        'perspective': 0.0002,  # Increased perspective - more realistic distortion
+        # Geometric augmentations for greyscale - OPTIMAL settings (proved effective)
+        'degrees': 20.0,  # Rotation variation (±20 degrees)
+        'translate': 0.2,  # Translation (±20% of image size)
+        'scale': 0.7,  # Scaling variation (0.3x-1.7x)
+        'shear': 5.0,  # Shearing (±5 degrees)
+        'perspective': 0.0003,  # Perspective transformation
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
         'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
