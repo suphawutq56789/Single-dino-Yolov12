@@ -634,29 +634,30 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - MODERATE settings for batch=4
-        # Balanced augmentation optimized for batch=4 with 66 training images
-        'mixup': 0.25,  # Moderate MixUp (reduced from 0.3)
-        'copy_paste': 0.25,  # Moderate CopyPaste (reduced from 0.3)
-        'mosaic': 0.4,  # Moderate Mosaic (reduced from 0.5)
+        # Augmentation for SMALL DATASET - HYBRID approach for balanced performance
+        # Strategy: Reduce difficult augmentations (Mosaic/MixUp) while keeping geometric augmentations strong
+        # Goal: Train 25-35%, Test 45-50% (balanced performance)
+        'mixup': 0.15,  # REDUCED - Less image blending makes training easier
+        'copy_paste': 0.3,  # KEPT - Good for small dataset
+        'mosaic': 0.3,  # REDUCED - Less 4-image merging (easier to learn individual images)
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.35,  # Moderate brightness variation (reduced from 0.5)
+        'hsv_v': 0.5,  # STRONG - Brightness variation helps generalization
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.15,  # Moderate random erasing (reduced from 0.2)
+        'erasing': 0.2,  # STRONG - Random erasing prevents overfitting
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - MODERATE settings for batch=4
-        'degrees': 15.0,  # Moderate rotation (±15 degrees, reduced from ±20)
-        'translate': 0.15,  # Moderate translation (±15%, reduced from ±20%)
-        'scale': 0.6,  # Moderate scaling (0.4x-1.6x, reduced from 0.3x-1.7x)
-        'shear': 3.0,  # Moderate shearing (±3 degrees, reduced from ±5)
-        'perspective': 0.0002,  # Moderate perspective (reduced from 0.0003)
+        # Geometric augmentations for greyscale - STRONG settings (good for generalization without making training too hard)
+        'degrees': 20.0,  # STRONG - Rotation variation (±20 degrees)
+        'translate': 0.2,  # STRONG - Translation (±20% of image size)
+        'scale': 0.7,  # STRONG - Scaling variation (0.3x-1.7x)
+        'shear': 5.0,  # STRONG - Shearing (±5 degrees)
+        'perspective': 0.0003,  # STRONG - Perspective transformation
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
         'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
         # Additional settings for small dataset
-        'close_mosaic': 10,  # Enable close mosaic in last 10 epochs
+        'close_mosaic': 50,  # EARLY CLOSURE - Disable mosaic at epoch 150 (50 epochs before end) to let model learn details
         'bgr': 0.0,  # Disable BGR channel shuffling (not applicable to greyscale)
         'workers': 0,  # Disable multiprocessing workers to avoid DataLoader issues
         
