@@ -634,24 +634,24 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - REDUCED to improve train mAP
-        # Lighter augmentation helps model learn train set while still generalizing to val/test
-        'mixup': 0.1,  # Reduced MixUp (was 0.3) - less blending
-        'copy_paste': 0.1,  # Reduced CopyPaste (was 0.3) - less object copying
-        'mosaic': 0.2,  # Reduced Mosaic (was 0.5) - less 4-image merging
+        # Augmentation for SMALL DATASET - INCREASED for better generalization
+        # Stronger augmentation is crucial for 66 training images to prevent overfitting
+        'mixup': 0.3,  # Increased MixUp - blend images for better generalization
+        'copy_paste': 0.3,  # Increased CopyPaste - copy objects between images
+        'mosaic': 0.8,  # Increased Mosaic - merge 4 images to create more variations
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.3,  # Reduced brightness variation (was 0.5) - less intensity change
+        'hsv_v': 0.4,  # Increased brightness variation for more robustness
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.1,  # Reduced random erasing (was 0.2) - less parts hidden
+        'erasing': 0.2,  # Increased random erasing - simulate occlusion
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - REDUCED for easier learning
-        'degrees': 10.0,  # Reduced rotation (was 20.0) - now ±10 degrees
-        'translate': 0.1,  # Reduced translation (was 0.2) - now ±10% of image size
-        'scale': 0.5,  # Reduced scaling (was 0.7) - now 0.5x-1.5x instead of 0.3x-1.7x
-        'shear': 2.0,  # Reduced shearing (was 5.0) - now ±2 degrees
-        'perspective': 0.0001,  # Reduced perspective (was 0.0003) - less distortion
+        # Geometric augmentations for greyscale - INCREASED for robustness
+        'degrees': 15.0,  # Increased rotation - now ±15 degrees
+        'translate': 0.2,  # Increased translation - now ±20% of image size
+        'scale': 0.7,  # Increased scaling - now 0.3x-1.7x for more variation
+        'shear': 3.0,  # Increased shearing - now ±3 degrees
+        'perspective': 0.0002,  # Increased perspective - more realistic distortion
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
         'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
