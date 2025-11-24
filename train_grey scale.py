@@ -634,24 +634,24 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - OPTIMAL settings (achieved Test mAP50=50%)
-        # Balanced augmentation for best generalization with 66 training images
-        'mixup': 0.3,  # MixUp augmentation for better generalization
-        'copy_paste': 0.3,  # CopyPaste augmentation
-        'mosaic': 0.5,  # Mosaic augmentation for diverse samples (not too aggressive)
+        # Augmentation for SMALL DATASET - MODERATE settings for batch=4
+        # Balanced augmentation optimized for batch=4 with 66 training images
+        'mixup': 0.25,  # Moderate MixUp (reduced from 0.3)
+        'copy_paste': 0.25,  # Moderate CopyPaste (reduced from 0.3)
+        'mosaic': 0.4,  # Moderate Mosaic (reduced from 0.5)
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.5,  # Brightness variation for greyscale
+        'hsv_v': 0.35,  # Moderate brightness variation (reduced from 0.5)
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.2,  # Random erasing to prevent overfitting
+        'erasing': 0.15,  # Moderate random erasing (reduced from 0.2)
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - OPTIMAL settings (proved effective)
-        'degrees': 20.0,  # Rotation variation (±20 degrees)
-        'translate': 0.2,  # Translation (±20% of image size)
-        'scale': 0.7,  # Scaling variation (0.3x-1.7x)
-        'shear': 5.0,  # Shearing (±5 degrees)
-        'perspective': 0.0003,  # Perspective transformation
+        # Geometric augmentations for greyscale - MODERATE settings for batch=4
+        'degrees': 15.0,  # Moderate rotation (±15 degrees, reduced from ±20)
+        'translate': 0.15,  # Moderate translation (±15%, reduced from ±20%)
+        'scale': 0.6,  # Moderate scaling (0.4x-1.6x, reduced from 0.3x-1.7x)
+        'shear': 3.0,  # Moderate shearing (±3 degrees, reduced from ±5)
+        'perspective': 0.0002,  # Moderate perspective (reduced from 0.0003)
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
         'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
