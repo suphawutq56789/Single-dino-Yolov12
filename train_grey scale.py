@@ -618,13 +618,13 @@ def train_triple_dinov3_greyscale(
         'cache': False,  # Disable caching for triple input
         'device': actual_device,  # Use auto-detected device (CPU if CUDA unavailable)
 
-        # Learning rate configuration for SMALL DATASET - adjusted for better convergence
-        # Higher initial LR helps with small datasets, lower final LR for stability
-        'lr0': 0.005 if freeze_dinov3 else 0.001,  # Increased initial LR for better learning
-        'lrf': 0.01,  # Lower final LR ratio for better convergence
+        # Learning rate configuration for VERY SMALL DATASET (66 images) - aggressive learning
+        # Much higher initial LR to force learning on limited data
+        'lr0': 0.01 if freeze_dinov3 else 0.005,  # HIGH initial LR for aggressive learning
+        'lrf': 0.1,  # Higher final LR ratio to maintain learning throughout
         'momentum': 0.937,  # Standard momentum
-        'weight_decay': 0.0005,
-        'warmup_epochs': 3,  # Shorter warmup for faster start (small dataset)
+        'weight_decay': 0.0001,  # REDUCED - Less regularization to allow overfitting on small dataset
+        'warmup_epochs': 5,  # Longer warmup for stability with high LR
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
 
@@ -634,30 +634,30 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - HYBRID approach for balanced performance
-        # Strategy: Reduce difficult augmentations (Mosaic/MixUp) while keeping geometric augmentations strong
-        # Goal: Train 25-35%, Test 45-50% (balanced performance)
-        'mixup': 0.15,  # REDUCED - Less image blending makes training easier
-        'copy_paste': 0.3,  # KEPT - Good for small dataset
-        'mosaic': 0.3,  # REDUCED - Less 4-image merging (easier to learn individual images)
+        # Augmentation for VERY SMALL DATASET (66 images) - MINIMAL approach
+        # Strategy: Nearly disable all augmentations, let model learn original images first
+        # Goal: Train mAP > 0.5 first, then test mAP >= 0.5 (must learn before generalizing)
+        'mixup': 0.0,  # DISABLED - Too difficult for very small dataset
+        'copy_paste': 0.0,  # DISABLED - Confuses model on very small dataset
+        'mosaic': 0.0,  # DISABLED - Too difficult with only 66 images
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.5,  # STRONG - Brightness variation helps generalization
+        'hsv_v': 0.2,  # MINIMAL - Very light brightness variation
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.2,  # STRONG - Random erasing prevents overfitting
+        'erasing': 0.0,  # DISABLED - Preserve all features
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - STRONG settings (good for generalization without making training too hard)
-        'degrees': 20.0,  # STRONG - Rotation variation (±20 degrees)
-        'translate': 0.2,  # STRONG - Translation (±20% of image size)
-        'scale': 0.7,  # STRONG - Scaling variation (0.3x-1.7x)
-        'shear': 5.0,  # STRONG - Shearing (±5 degrees)
-        'perspective': 0.0003,  # STRONG - Perspective transformation
+        # Geometric augmentations for greyscale - MINIMAL settings (only essential augmentations)
+        'degrees': 5.0,  # MINIMAL - Very light rotation (±5 degrees)
+        'translate': 0.05,  # MINIMAL - Very light translation (±5% of image size)
+        'scale': 0.3,  # MINIMAL - Light scaling variation (0.7x-1.3x)
+        'shear': 0.0,  # DISABLED - No shearing
+        'perspective': 0.0,  # DISABLED - No perspective transformation
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
-        'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
+        'fliplr': 0.5,  # Enable horizontal flip (50% chance - simple and effective)
 
         # Additional settings for small dataset
-        'close_mosaic': 50,  # EARLY CLOSURE - Disable mosaic at epoch 150 (50 epochs before end) to let model learn details
+        'close_mosaic': 10,  # Mosaic already disabled, but set early closure anyway
         'bgr': 0.0,  # Disable BGR channel shuffling (not applicable to greyscale)
         'workers': 0,  # Disable multiprocessing workers to avoid DataLoader issues
         
@@ -1015,14 +1015,14 @@ def main():
                        help='Use separate DINOv3 branches for each input')
     parser.add_argument('--pretrained', type=str,
                        help='Path to pretrained YOLOv12 model (.pt file)')
-    parser.add_argument('--epochs', type=int, default=100,
-                       help='Number of training epochs (default: 100)')
-    parser.add_argument('--batch', type=int, default=8,
-                       help='Batch size (default: 8)')
+    parser.add_argument('--epochs', type=int, default=200,
+                       help='Number of training epochs (default: 200)')
+    parser.add_argument('--batch', type=int, default=4,
+                       help='Batch size (default: 4)')
     parser.add_argument('--imgsz', type=int, default=640,
                        help='Image size (default: 640, use 224 for DINOv3 optimal or 640 for YOLO standard)')
-    parser.add_argument('--patience', type=int, default=50,
-                       help='Early stopping patience (default: 50)')
+    parser.add_argument('--patience', type=int, default=100,
+                       help='Early stopping patience (default: 100)')
     parser.add_argument('--name', type=str, default='yolov12_triple_dinov3_greyscale',
                        help='Experiment name (default: yolov12_triple_dinov3_greyscale)')
     parser.add_argument('--device', type=str, default='0',
