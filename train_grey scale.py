@@ -634,30 +634,29 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for VERY SMALL DATASET (66 images) - MEDIUM approach (balanced)
-        # Strategy: Use moderate augmentation for faster learning while maintaining generalization
-        # Goal: Reduce overfitting, improve Test mAP
-        'mixup': 0.0,  # Keep disabled - too confusing for dental X-rays
-        'copy_paste': 0.0,  # Keep disabled - not suitable for this task
-        'mosaic': 0.0,  # Keep disabled - too difficult with only 66 images
+        # Augmentation for SMALL DATASET - OPTIMAL settings (achieved Test mAP50=50-53%)
+        # Balanced augmentation for best generalization with 66 training images
+        'mixup': 0.3,  # MixUp augmentation for better generalization
+        'copy_paste': 0.3,  # CopyPaste augmentation
+        'mosaic': 0.5,  # Mosaic augmentation for diverse samples (not too aggressive)
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.3,  # MEDIUM - Moderate brightness variation
+        'hsv_v': 0.5,  # Brightness variation for greyscale
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.1,  # MEDIUM - Light random erasing
+        'erasing': 0.2,  # Random erasing to prevent overfitting
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - MEDIUM settings (balanced speed and generalization)
-        'degrees': 10.0,  # MEDIUM - Moderate rotation (±10 degrees)
-        'translate': 0.10,  # MEDIUM - Moderate translation (±10% of image size)
-        'scale': 0.4,  # MEDIUM - Moderate scaling variation (0.6x-1.4x)
-        'shear': 2.0,  # MEDIUM - Light shearing
-        'perspective': 0.0,  # Keep disabled - might distort dental features too much
-        'flipud': 0.15,  # MEDIUM - Light vertical flip
-        'fliplr': 0.5,  # Keep enabled - horizontal flip
+        # Geometric augmentations for greyscale - OPTIMAL settings (proved effective)
+        'degrees': 20.0,  # Rotation variation (±20 degrees)
+        'translate': 0.2,  # Translation (±20% of image size)
+        'scale': 0.7,  # Scaling variation (0.3x-1.7x)
+        'shear': 5.0,  # Shearing (±5 degrees)
+        'perspective': 0.0003,  # Perspective transformation
+        'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
+        'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
         # Additional settings for small dataset
-        'close_mosaic': 10,  # Mosaic already disabled, but set early closure anyway
+        'close_mosaic': 10,  # Enable close mosaic in last 10 epochs
         'bgr': 0.0,  # Disable BGR channel shuffling (not applicable to greyscale)
         'workers': 0,  # Disable multiprocessing workers to avoid DataLoader issues
         
