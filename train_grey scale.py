@@ -634,27 +634,27 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for VERY SMALL DATASET (66 images) - MINIMAL approach
-        # Strategy: Nearly disable all augmentations, let model learn original images first
-        # Goal: Train mAP > 0.5 first, then test mAP >= 0.5 (must learn before generalizing)
-        'mixup': 0.0,  # DISABLED - Too difficult for very small dataset
-        'copy_paste': 0.0,  # DISABLED - Confuses model on very small dataset
-        'mosaic': 0.0,  # DISABLED - Too difficult with only 66 images
+        # Augmentation for VERY SMALL DATASET (66 images) - STRONG approach to improve generalization
+        # Strategy: Use heavy augmentation to force model to generalize better
+        # Goal: Reduce overfitting, improve Test mAP (currently only 5.5%)
+        'mixup': 0.0,  # Keep disabled - too confusing for dental X-rays
+        'copy_paste': 0.0,  # Keep disabled - not suitable for this task
+        'mosaic': 0.0,  # Keep disabled - too difficult with only 66 images
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.2,  # MINIMAL - Very light brightness variation
+        'hsv_v': 0.4,  # INCREASED - Stronger brightness variation to improve generalization
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.0,  # DISABLED - Preserve all features
+        'erasing': 0.2,  # ENABLED - Random erasing to force robustness
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - MINIMAL settings (only essential augmentations)
-        'degrees': 5.0,  # MINIMAL - Very light rotation (±5 degrees)
-        'translate': 0.05,  # MINIMAL - Very light translation (±5% of image size)
-        'scale': 0.3,  # MINIMAL - Light scaling variation (0.7x-1.3x)
-        'shear': 0.0,  # DISABLED - No shearing
-        'perspective': 0.0,  # DISABLED - No perspective transformation
-        'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
-        'fliplr': 0.5,  # Enable horizontal flip (50% chance - simple and effective)
+        # Geometric augmentations for greyscale - STRONG settings to reduce overfitting
+        'degrees': 15.0,  # INCREASED - Stronger rotation (±15 degrees)
+        'translate': 0.15,  # INCREASED - Stronger translation (±15% of image size)
+        'scale': 0.6,  # INCREASED - Stronger scaling variation (0.4x-1.6x)
+        'shear': 5.0,  # ENABLED - Add shearing for more variation
+        'perspective': 0.0,  # Keep disabled - might distort dental features too much
+        'flipud': 0.3,  # ENABLED - Vertical flip for more variation
+        'fliplr': 0.5,  # Keep enabled - horizontal flip
 
         # Additional settings for small dataset
         'close_mosaic': 10,  # Mosaic already disabled, but set early closure anyway
