@@ -634,24 +634,26 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - OPTIMAL settings (achieved Test mAP50=50-53%)
-        # Balanced augmentation for best generalization with 66 training images
-        'mixup': 0.3,  # MixUp augmentation for better generalization
-        'copy_paste': 0.3,  # CopyPaste augmentation
-        'mosaic': 0.5,  # Mosaic augmentation for diverse samples (not too aggressive)
+        # Augmentation for SMALL DATASET - REDUCED settings (to increase train/val mAP)
+        # Lighter augmentation to make training easier while maintaining test generalization
+        # Previous OPTIMAL settings (commit c9395ab) achieved Test=38.26%, Train=4.52%, Val=9.47%
+        # Goal: Increase Train/Val while keeping Test at ~38%
+        'mixup': 0.2,  # MixUp augmentation (reduced from 0.3)
+        'copy_paste': 0.2,  # CopyPaste augmentation (reduced from 0.3)
+        'mosaic': 0.3,  # Mosaic augmentation (reduced from 0.5)
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.5,  # Brightness variation for greyscale
+        'hsv_v': 0.35,  # Brightness variation for greyscale (reduced from 0.5)
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.2,  # Random erasing to prevent overfitting
+        'erasing': 0.1,  # Random erasing (reduced from 0.2)
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - OPTIMAL settings (proved effective)
-        'degrees': 20.0,  # Rotation variation (±20 degrees)
-        'translate': 0.2,  # Translation (±20% of image size)
-        'scale': 0.7,  # Scaling variation (0.3x-1.7x)
-        'shear': 5.0,  # Shearing (±5 degrees)
-        'perspective': 0.0003,  # Perspective transformation
+        # Geometric augmentations for greyscale - REDUCED settings (lighter than OPTIMAL)
+        'degrees': 12.0,  # Rotation variation (reduced from 20.0)
+        'translate': 0.12,  # Translation (reduced from 0.2)
+        'scale': 0.5,  # Scaling variation (reduced from 0.7)
+        'shear': 3.0,  # Shearing (reduced from 5.0)
+        'perspective': 0.0002,  # Perspective transformation (reduced from 0.0003)
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
         'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
