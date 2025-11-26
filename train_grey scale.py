@@ -634,26 +634,26 @@ def train_triple_dinov3_greyscale(
         # Mixed precision (helpful for memory with DINOv3) - disabled to avoid BatchNorm issues with small batch
         'amp': False,
 
-        # Augmentation for SMALL DATASET - REDUCED settings (to increase train/val mAP)
-        # Lighter augmentation to make training easier while maintaining test generalization
-        # Previous OPTIMAL settings (commit c9395ab) achieved Test=38.26%, Train=4.52%, Val=9.47%
-        # Goal: Increase Train/Val while keeping Test at ~38%
-        'mixup': 0.2,  # MixUp augmentation (reduced from 0.3)
-        'copy_paste': 0.2,  # CopyPaste augmentation (reduced from 0.3)
-        'mosaic': 0.3,  # Mosaic augmentation (reduced from 0.5)
+        # Augmentation for SMALL DATASET - VERY LIGHT settings (commit 0569a2b style)
+        # Very light augmentation for balanced Train/Val/Test performance
+        # Expected: Train ~24%, Val ~22%, Test ~31% (balanced results)
+        # Lighter than REDUCED (b2fd7fb) which gave Train=23.85%, Val=22.95%, Test=10.31%
+        'mixup': 0.1,  # Very light MixUp (less blending)
+        'copy_paste': 0.1,  # Very light CopyPaste (less object copying)
+        'mosaic': 0.2,  # Very light Mosaic (less 4-image merging)
         'hsv_h': 0.0,  # Disable HSV hue augmentation (greyscale has no color)
         'hsv_s': 0.0,  # Disable HSV saturation augmentation (greyscale has no color)
-        'hsv_v': 0.35,  # Brightness variation for greyscale (reduced from 0.5)
+        'hsv_v': 0.3,  # Light brightness variation for greyscale
         'auto_augment': None,  # Disable auto augmentation (ToGray incompatible with greyscale)
-        'erasing': 0.1,  # Random erasing (reduced from 0.2)
+        'erasing': 0.1,  # Light random erasing
         'plots': False,  # Disable plots (visualization might be incompatible with 3-channel greyscale input)
 
-        # Geometric augmentations for greyscale - REDUCED settings (lighter than OPTIMAL)
-        'degrees': 12.0,  # Rotation variation (reduced from 20.0)
-        'translate': 0.12,  # Translation (reduced from 0.2)
-        'scale': 0.5,  # Scaling variation (reduced from 0.7)
-        'shear': 3.0,  # Shearing (reduced from 5.0)
-        'perspective': 0.0002,  # Perspective transformation (reduced from 0.0003)
+        # Geometric augmentations for greyscale - VERY LIGHT settings (easiest learning)
+        'degrees': 10.0,  # Very light rotation (±10 degrees)
+        'translate': 0.1,  # Very light translation (±10% of image size)
+        'scale': 0.5,  # Light scaling variation (0.5x-1.5x)
+        'shear': 2.0,  # Very light shearing (±2 degrees)
+        'perspective': 0.0001,  # Very light perspective transformation
         'flipud': 0.0,  # Disable vertical flip (might not make sense for some objects)
         'fliplr': 0.5,  # Enable horizontal flip (50% chance - works well for most objects)
 
